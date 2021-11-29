@@ -1,7 +1,7 @@
 #ifndef ITERATOR_HPP_
 #define ITERATOR_HPP_
 
-#include <cstddef>
+#include <cstddef>  //  defines size_t, ptrdiff_t, NULL
 
 namespace ft {
 
@@ -252,6 +252,9 @@ template <typename Iter>
 bool operator>= (const ReverseIterator<Iter>& left, const ReverseIterator<Iter>& right) {
     return (left.base() <= right.base());
 }
+
+
+
 
 /*  from video, extra functions  */
 //  todo check if distance <0
