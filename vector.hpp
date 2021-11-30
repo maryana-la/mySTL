@@ -1,6 +1,3 @@
-//
-// Created by Ragwyle Chelsea on 11/9/21.
-//
 
 #ifndef VECTOR_HPP_
 #define VECTOR_HPP_
@@ -13,7 +10,7 @@
 namespace ft {
 
     template<typename T, typename Allocator = std::allocator<T> >
-    class Vector {
+    class vector {
     public:
         typedef Allocator                       allocator_type;
         typedef T                               value_type;
@@ -30,52 +27,57 @@ namespace ft {
 
     private:
         pointer             _array; // указатель на выделенную память
-        pointer             _endPoint; // указатель на конец
-        size_type           _capacity; // выделенная память
-        size_type           _numOfElem; // кол-во элементов
+        size_type           _capacity{}; // выделенная память
+        size_type           _numOfElem{}; // кол-во элементов
         allocator_type      _alloc; // некий механизм, с помощью которого будем выделять память
 
     public:
         /* Vector constructors */
 
 //        (1) empty container constructor (default constructor)
-        explicit vector (const allocator_type& alloc_var = allocator_type()) :
-            _array(NULL), _endPoint(NULL), _capacity(0), _numOfElem(0), _alloc(alloc_var) {}
+        explicit vector (const allocator_type& alloc = allocator_type()) :
+            _array(NULL), _capacity(0), _numOfElem(0), _alloc(alloc) {}
 
 //        (2) fill constructor: Constructs a container with n elements. Each element is a copy of val.
-        explicit vector (size_type n, const value_type& value = value_type(), const allocator_type& alloc_var = allocator_type()) : _numOfElem(n), _capacity(n), _alloc(alloc_var) {
+        explicit vector (size_type n, const value_type& value = value_type(), const allocator_type& alloc = allocator_type()) :
+                        _numOfElem(n), _capacity(n), _alloc(alloc) {
             _array = _alloc.allocate(_capacity);
-            for (size_type i = 0; i < n; i++)
-                _alloc.construct(_array + i, value);
+            size_type i = 0;
+            try {
+                for (; i < n; i++)
+                    _alloc.construct(_array + i, value);
+            }
+            catch (...) {
+                for (size_type j = 0; j < i; j++)
+                    _alloc.destroy(&_array[j]);
+                _alloc.deallocate(_array, n);
+                throw;
+            }
         };
 
 //        (3) range constructor
-//        template <typename InputIterator> //todo write functions below
-//        Vector(InputIterator first, InputIterator last, const allocator_type& alloc_var = allocator_type(), typename std::enable_if<!std::is_integral<InputIterator>::value, InputIterator>::type = InputIterator()): _alloc(alloc) {
-//            _numOfElem = std::distance(first, last);
-//            _capacity= _numOfElem;
-//            _array = _alloc.allocate(_size);
+        template <typename InputIterator> //todo write functions below
+        vector(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(),
+               typename std::enable_if<!std::is_integral<InputIterator>::value, InputIterator>::type = 0): _alloc(alloc), _array(NULL) {
+            _numOfElem = std::distance(first, last);
+            _capacity= _numOfElem;
+            insert(begin(), first, last);
+//            _array = _alloc.allocate(_capacity);
 //            for (size_t i = 0; first != last; first++) {
 //                _alloc.construct(&_array[i], *first);
 //                i++;
 //            }
 //            return ;
-//        }
-
-
+        }
 
 //        (4) copy constructor
-        vector (const vector& other) :
-        {
-//            this->_capacity = other.size();
-//            this->countElem = 0;
-//            this->alloc = other.alloc;
-//            this->point = NULL;
-//            this->endPoint = NULL;
-//            size_type	length = other.size();
-//
-//            this->point = this->alloc.allocate(length);
-//            this->endPoint = this->point;
+        vector (const vector& other) {
+            this->_numOfElem = other.size();
+            this->_capacity = other.capacity();
+            this->_alloc = other.get_allocator();
+
+            _alloc.allocate(_numOfElem);
+            insert(begin(), other.begin(), other.end());
 //            for (size_type i  = 0; i < length; ++i)
 //            {
 //                this->alloc.construct(this->endPoint, *(other.point + i));
@@ -84,8 +86,20 @@ namespace ft {
 //            this->countElem = length;
         };
 
-//        ~vector() {}
-//        vector& operator= (const vector& x) {}
+        ~vector() {
+            if (!empty()) {
+                for (size_type i = 0; i < _numOfElem; i++)
+                    _alloc.destroy(&_array[i]);
+                _alloc.deallocate(_array);
+            }
+        }
+
+
+        vector& operator= (const vector& other) {
+            clear();
+            insert(begin(),other.begin(), other.end());
+            return *this;
+        }
 
 
         /* Iterators */
@@ -210,32 +224,40 @@ namespace ft {
             clear: Clear content (public member function )
         */
 
-        //            Assigns new contents to the vector, replacing its current contents, and modifying its size accordingly.
-//        template <class InputIterator>
-//        void assign (InputIterator first, InputIterator last) {
+        template <class InputIterator>
+        void assign (InputIterator first, InputIterator last,
+                     typename std::enable_if<!std::is_integral<InputIterator>::value, InputIterator>::type = 0) {
+
+            erase(begin(), end());
+            insert(begin(), first, last);
+
+            // my code:
+
 //            size_type distance = std::distance(first, last);
-//            size_type position = 0;
 //            if (distance > _numOfElem)
 //                reserve(distance);
-//            for (position = 0; first != last; first++ ) {
-//                _alloc.construct(&_container[position++], *first);
+//            size_type i = 0;
+//            for (; first != last; first++, i++)
+//                _alloc.construct(&_array[i], *first);
+//            for (; i < _numOfElem; i++) {
+//                _alloc.destroy(&_array[i]);
 //            }
-//            for (; position < _size; position++) {
-//                _alloc.destroy(&_container[position]);
-//            }
-//            _size = distance;
-//
-//        }
+//            _numOfElem = distance;
+        }
 
-//todo check is needs to assign from the beginning and if destroyed previous info
         void assign (size_type n, const value_type& val) {
-            if (n > _capacity)
-                reserve(n);
-            erase(begin(), end()); //todo write erase function
-            _numOfElem = n;
-            for (size_type i = 0; i < _numOfElem; i++) {
-                _alloc.construct(&_array[i], val);
-            }
+//            my code:
+//            if (n > _capacity)
+//                reserve(n);
+//            erase(begin(), end());
+//            insert(begin(), n, val);
+//            _numOfElem = n;
+//            for (size_type i = 0; i < _numOfElem; i++)
+//                _alloc.construct(&_array[i], val);
+
+            value_type& tmp = val;
+            erase(begin(), end());
+            insert(begin(), n, tmp);
         }
 
         void push_back (const value_type& val) {
@@ -332,8 +354,6 @@ namespace ft {
             } */
         }
 
-
-
         template <class InputIterator>
         void insert (iterator position, InputIterator first, InputIterator last) {
 //            from the book
@@ -341,12 +361,12 @@ namespace ft {
                 position = insert(position, *first);
         }
 
+//        the same, but different realization
         template <typename InputIterator >
-        void insert (iterator position, InputIterator first, InputIterator last) {
-                     typename enable_if<!is_integral<InputIterator>::value, InputIterator>::type = 0) {
+        void insert (iterator position, InputIterator first, InputIterator last,
+                     typename std::enable_if<!std::is_integral<InputIterator>::value, InputIterator>::type = 0) {
             size_type pos = position - begin();
             size_type s = last - first;
-
             if (_numOfElem + s > _capacity)
                 reserve(_numOfElem + s);
             position = begin() + pos;
@@ -354,18 +374,54 @@ namespace ft {
                 position = insert(position, *it);
                 position++;
             }
-
         }
 
+        iterator erase (iterator position) {
+            if (position == this->end())
+                return position;
+            size_type i = position - begin();
+            _alloc.destroy(_array + i);
+            for (iterator it = position; it != this->end() - 1; i++, it++) {
+                _alloc.construct(&_array[i], _array[i + 1]);
+                _alloc.destroy(&_array[i + 1]);
+            }
+            _numOfElem--;
+            return position;
+        }
+        
+        iterator erase (iterator first, iterator last) {
+            if (first >= last)
+                return first;
+            size_type EraseDist = last - first;
+            size_type EraseBegin = first - begin();
+            for (size_type i = 0; i < EraseDist; i++)
+                _alloc.destroy(_array + EraseBegin + i);
+            for (size_type i = EraseBegin + EraseDist; i < _numOfElem; i++) {
+                _alloc.construct(&_array[i - EraseDist], _array[i]);
+                _alloc.destroy(&_array[i]);
+            }
+            return first;
+        }
 
-
+        void swap (vector& x) {
+            std::swap(_array, x._array);
+            std::swap(_alloc, x._alloc);
+            std::swap(_numOfElem, x._numOfElem);
+            std::swap(_capacity, x._capacity);
+        }
 
 
         void clear() {
-
+            erase(begin(), end());
         }
 
+        /* Allocator */
 
+        allocator_type get_allocator() const {
+            return _alloc;
+        }
+
+/* from the book/ used for insert
     protected:
         void Destroy(pointer first, pointer last) {
             for (; first != last; ++first)
@@ -398,167 +454,31 @@ namespace ft {
             }
             return array;
         }
-
+*/
     };
+
+
+
+//    template <class T, class Alloc>
+//    bool operator== (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+//
+//    template <class T, class Alloc>
+//    bool operator!= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+//
+//    template <class T, class Alloc>
+//    bool operator<  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+//
+//    template <class T, class Alloc>
+//    bool operator<= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+//
+//    template <class T, class Alloc>
+//    bool operator>  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+//
+//    template <class T, class Alloc>
+//    bool operator>= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+//
+
 }
 
 
 #endif  //  VECTOR_HPP_
-
-
-
-//template <class T, class A = std::allocator<T> >
-//        class X {
-//        public:
-//            typedef A allocator_type;
-//            typedef typename A::value_type value_type;
-//            typedef typename A::reference reference;
-//            typedef typename A::const_reference const_reference;
-//            typedef typename A::difference_type difference_type;
-//            typedef typename A::size_type size_type;
-//
-//            class iterator {
-//            public:
-//                typedef typename A::difference_type difference_type;
-//                typedef typename A::value_type value_type;
-//                typedef typename A::reference reference;
-//                typedef typename A::pointer pointer;
-//                typedef std::random_access_iterator_tag iterator_category; //or another tag
-//
-//                iterator();
-//                iterator(const iterator&);
-//                ~iterator();
-//
-//                iterator& operator=(const iterator&);
-//                bool operator==(const iterator&) const;
-//                bool operator!=(const iterator&) const;
-//                bool operator<(const iterator&) const; //optional
-//                bool operator>(const iterator&) const; //optional
-//                bool operator<=(const iterator&) const; //optional
-//                bool operator>=(const iterator&) const; //optional
-//
-//                iterator& operator++();
-//                iterator operator++(int); //optional
-//                iterator& operator--(); //optional
-//                iterator operator--(int); //optional
-//                iterator& operator+=(size_type); //optional
-//                iterator operator+(size_type) const; //optional
-//                friend iterator operator+(size_type, const iterator&); //optional
-//                iterator& operator-=(size_type); //optional
-//                iterator operator-(size_type) const; //optional
-//                difference_type operator-(iterator) const; //optional
-//
-//                reference operator*() const;
-//                pointer operator->() const;
-//                reference operator[](size_type) const; //optional
-//            };
-
-//            class const_iterator {
-//            public:
-//                typedef typename A::difference_type difference_type;
-//                typedef typename A::value_type value_type;
-//                typedef typename const A::reference reference;
-//                typedef typename const A::pointer pointer;
-//                typedef std::random_access_iterator_tag iterator_category; //or another tag
-//
-//                const_iterator ();
-//                const_iterator (const const_iterator&);
-//                const_iterator (const iterator&);
-//                ~const_iterator();
-//
-//                const_iterator& operator=(const const_iterator&);
-//                bool operator==(const const_iterator&) const;
-//                bool operator!=(const const_iterator&) const;
-//                bool operator<(const const_iterator&) const; //optional
-//                bool operator>(const const_iterator&) const; //optional
-//                bool operator<=(const const_iterator&) const; //optional
-//                bool operator>=(const const_iterator&) const; //optional
-//
-//                const_iterator& operator++();
-//                const_iterator operator++(int); //optional
-//                const_iterator& operator--(); //optional
-//                const_iterator operator--(int); //optional
-//                const_iterator& operator+=(size_type); //optional
-//                const_iterator operator+(size_type) const; //optional
-//                friend const_iterator operator+(size_type, const const_iterator&); //optional
-//                const_iterator& operator-=(size_type); //optional
-//                const_iterator operator-(size_type) const; //optional
-//                difference_type operator-(const_iterator) const; //optional
-//
-//                reference operator*() const;
-//                pointer operator->() const;
-//                reference operator[](size_type) const; //optional
-//            };
-//
-//            typedef std::reverse_iterator<iterator> reverse_iterator; //optional
-//            typedef std::reverse_iterator<const_iterator> const_reverse_iterator; //optional
-//
-//            X();
-//            X(const X&);
-//            ~X();
-//
-//            X& operator=(const X&);
-//            bool operator==(const X&) const;
-//            bool operator!=(const X&) const;
-//            bool operator<(const X&) const; //optional
-//            bool operator>(const X&) const; //optional
-//            bool operator<=(const X&) const; //optional
-//            bool operator>=(const X&) const; //optional
-//
-//            iterator begin();
-//            const_iterator begin() const;
-//            const_iterator cbegin() const;
-//            iterator end();
-//            const_iterator end() const;
-//            const_iterator cend() const;
-//            reverse_iterator rbegin(); //optional
-//            const_reverse_iterator rbegin() const; //optional
-//            const_reverse_iterator crbegin() const; //optional
-//            reverse_iterator rend(); //optional
-//            const_reverse_iterator rend() const; //optional
-//            const_reverse_iterator crend() const; //optional
-//
-//            reference front(); //optional
-//            const_reference front() const; //optional
-//            reference back(); //optional
-//            const_reference back() const; //optional
-//            template<class ...Args>
-//            void emplace_front(Args&&...); //optional
-//            template<class ...Args>
-//            void emplace_back(Args&&...); //optional
-//            void push_front(const T&); //optional
-//            void push_front(T&&); //optional
-//            void push_back(const T&); //optional
-//            void push_back(T&&); //optional
-//            void pop_front(); //optional
-//            void pop_back(); //optional
-//            reference operator[](size_type); //optional
-//            const_reference operator[](size_type) const; //optional
-//            reference at(size_type); //optional
-//            const_reference at(size_type) const; //optional
-//
-//            template<class ...Args>
-//            iterator emplace(const_iterator, Args&&...); //optional
-//            iterator insert(const_iterator, const T&); //optional
-//            iterator insert(const_iterator, T&&); //optional
-//            iterator insert(const_iterator, size_type, T&); //optional
-//            template<class iter>
-//            iterator insert(const_iterator, iter, iter); //optional
-//            iterator insert(const_iterator, std::initializer_list<T>); //optional
-//            iterator erase(const_iterator); //optional
-//            iterator erase(const_iterator, const_iterator); //optional
-//            void clear(); //optional
-//            template<class iter>
-//            void assign(iter, iter); //optional
-//            void assign(std::initializer_list<T>); //optional
-//            void assign(size_type, const T&); //optional
-//
-//            void swap(X&);
-//            size_type size() const;
-//            size_type max_size() const;
-//            bool empty() const;
-//
-//            A get_allocator() const; //optional
-//        };
-//template <class T, class A = std::allocator<T> >
-//        void swap(X<T,A>&, X<T,A>&); //optional

@@ -2,6 +2,7 @@
 #define ITERATOR_HPP_
 
 #include <cstddef>  //  defines size_t, ptrdiff_t, NULL
+#include <iterator>
 
 namespace ft {
 
@@ -27,7 +28,7 @@ template<class It>
 struct iterator_traits {
     typedef typename It::iterator_category iterator_category;
     typedef typename It::value_type value_type;
-    typedef typename It::distance_type distance_type;
+    typedef typename It::difference_type difference_type;
     typedef typename It::pointer pointer;
     typedef typename It::reference reference;
 };
@@ -36,7 +37,7 @@ template<class T>
 struct iterator_traits <T *> {
     typedef random_access_iterator_tag iterator_category;
     typedef T value_type;
-    typedef ptrdiff_t distance_type;
+    typedef ptrdiff_t difference_type;
     typedef T *pointer;
     typedef T& reference;
 };
@@ -45,7 +46,7 @@ template<class T>
 struct iterator_traits <const T *> {
     typedef random_access_iterator_tag iterator_category;
     typedef T value_type;
-    typedef ptrdiff_t distance_type;
+    typedef ptrdiff_t difference_type;
     typedef const T *pointer;
     typedef const T& reference;
 };
@@ -55,7 +56,7 @@ struct iterator_traits <const T *> {
  *  vector iterator
  */
 
-template <class T, class Category = ft::random_access_iterator_tag>
+template <class T, class Category = std::random_access_iterator_tag>
 class RandomAccessIterator {
  public:
      typedef T           value_type;
@@ -71,8 +72,8 @@ class RandomAccessIterator {
 
  public:
      RandomAccessIterator() : _ptr(NULL) {}
-     explicit RandomAccessIterator(const pointer other) : _ptr(other) {}
-     explicit RandomAccessIterator(const RandomAccessIterator& other) :
+     explicit RandomAccessIterator(pointer other) : _ptr(other->_ptr) {}
+     RandomAccessIterator(const RandomAccessIterator& other) :
          _ptr(other._ptr) {}
 
      RandomAccessIterator& operator=(const RandomAccessIterator& other) {
@@ -159,15 +160,15 @@ Can be dereferenced as an lvalue (if in a dereferenceable state).	*a = t
 
 template <typename Iter>
 class ReverseIterator : public iterator<
-                    typename fiterator_traits<_Iter>::iterator_category,
-                    typename iterator_traits<_Iter>::value_type,
-                    typename iterator_traits<_Iter>::difference_type,
-                    typename iterator_traits<_Iter>::pointer,
-                    typename iterator_traits<_Iter>::reference> {
+                    typename iterator_traits<Iter>::iterator_category,
+                    typename iterator_traits<Iter>::value_type,
+                    typename iterator_traits<Iter>::difference_type,
+                    typename iterator_traits<Iter>::pointer,
+                    typename iterator_traits<Iter>::reference> {
  public:
      typedef typename iterator_traits<Iter>::pointer Ptr;
      typedef typename iterator_traits<Iter>::reference Ref;
-     typedef typename iterator_traits<Iter>::distance_type Dist;
+     typedef typename iterator_traits<Iter>::difference_type Dist;
      typedef Iter iterator_type;
      typedef ReverseIterator<Iter> RevIt;
 
@@ -179,7 +180,7 @@ class ReverseIterator : public iterator<
      explicit ReverseIterator(Iter x) : _current(x) {}
 
      template<typename U>
-     ReverseIterator(const ReverseIterator<U>& other) : _current(other.base()) {}
+     explicit ReverseIterator(const ReverseIterator<U>& other) : _current(other.base()) {}
 
      ~ReverseIterator() {}
 
