@@ -4,3 +4,8 @@
 /.idea/.gitignore
 /.idea/ft_containers.iml
 /c++ lessons
+
+/cmake-build-debug/
+/a.out
+/CMakeLists.txt
+/materials/
