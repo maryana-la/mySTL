@@ -2,9 +2,7 @@
 #define ITERATOR_HPP_
 
 #include <cstddef>  //  defines size_t, ptrdiff_t, NULL
-#include <iterator>
-//#include "other/type_traits2.hpp"
-//#include <type_traits>
+//#include <iterator>
 #include <iostream>
 #include "utils.hpp"
 
@@ -16,15 +14,15 @@ namespace ft {
     struct bidirectional_iterator_tag : public forward_iterator_tag {};
     struct random_access_iterator_tag : public bidirectional_iterator_tag {};
 
-    // template class iterator page 118 book
-    template <class C, class T, class D = ptrdiff_t, class Pt = T*, class Rt = T&>
-    struct iterator {
-        typedef C iterator_category;
-        typedef T value_type;
-        typedef D difference_type;
-        typedef Pt pointer;
-        typedef Rt reference;
-    };
+//    // template class iterator page 118 book
+//    template <class C, class T, class D = ptrdiff_t, class Pt = T*, class Rt = T&>
+//    struct iterator {
+//        typedef C iterator_category;
+//        typedef T value_type;
+//        typedef D difference_type;
+//        typedef Pt pointer;
+//        typedef Rt reference;
+//    };
 
     // template class iterator_traits
     template<typename It>
@@ -54,7 +52,7 @@ namespace ft {
         typedef const T& reference;
     };
 
-
+/*  not sure if needed this part:
         template <typename InputIt>
         typename ft::iterator_traits<InputIt>::difference_type
         do_distance(InputIt first, InputIt last, std::input_iterator_tag)
@@ -79,7 +77,7 @@ namespace ft {
             return ft::do_distance(first, last,
                                    typename ft::iterator_traits<InputIt>::iterator_category());
         }
-
+*/
 
     /*
      *  vector iterator
@@ -94,12 +92,10 @@ namespace ft {
          typedef typename ft::conditional<IsConst, const T&, T&>::type          reference;
          typedef std::random_access_iterator_tag    iterator_category;
 
-    //     typedef RandomAccessIterator<T> RAIt;
-
-     private:
+     protected:
          pointer _ptr;
 
-    //     pointer getPtr () const { return _ptr; }
+         pointer getPtr () const { return _ptr; }
 
      public:
          RandomAccessIterator() : _ptr(NULL) {}
@@ -117,8 +113,6 @@ namespace ft {
              this->_ptr = other._ptr;
              return *this;
          }
-
-            pointer getPtr () const { return _ptr; } //todo move to private and friend compare funcs
 
          virtual ~RandomAccessIterator() {}
 
@@ -140,13 +134,25 @@ namespace ft {
          difference_type operator-(const reference other) const { return (_ptr - other._ptr); }
 
          reference operator[](difference_type n) { return *(_ptr + n); }
+
+
+         //todo check if needed
          const reference operator[](difference_type n) const { return *(_ptr + n); }
-
-
-
         operator RandomAccessIterator<const value_type> () const { return RandomAccessIterator<const value_type>(_ptr) ; }
-    };
 
+
+        /* friend for non-member overloads */
+
+        template <typename T1, bool B1, bool C1>
+        friend ptrdiff_t operator-(const RandomAccessIterator<T1, B1> &left, const RandomAccessIterator<T1, C1> &right);
+
+        template <typename T1, bool B1, bool C1>
+        friend bool operator==(const RandomAccessIterator<T1, B1> &left, const RandomAccessIterator<T1, C1> &right);
+
+        template <typename T1, bool B1, bool C1>
+        friend bool operator<(const RandomAccessIterator<T1, B1> &left, const RandomAccessIterator<T1, C1> &right);
+
+    };  // RandomAccessIterator
 
         template <typename T>
         RandomAccessIterator<T> operator+(const RandomAccessIterator<T> &it, size_t num) {
@@ -166,15 +172,9 @@ namespace ft {
         }
 
         template <typename T, bool B, bool C>
-        ptrdiff_t operator-(const RandomAccessIterator<T, B> &left, const RandomAccessIterator<T, C> &right){
+        ptrdiff_t operator-(const RandomAccessIterator<T, B> &left, const RandomAccessIterator<T, C> &right) {
             return left.getPtr() - right.getPtr();
         }
-
-    //    template <typename T>
-    //    ptrdiff_t operator-(const RandomAccessIterator<T, Category> &left, const RandomAccessIterator<T, Category> &right) {
-    //        return left._ptr - right._ptr;
-    //    }
-
 
         template <typename T, bool B, bool C>
         bool operator==(const RandomAccessIterator<T, B> &left, const RandomAccessIterator<T, C> &right) {
@@ -183,17 +183,7 @@ namespace ft {
 
         template <typename T, bool B, bool C>
         bool operator!=(const RandomAccessIterator<T, B> &left, const RandomAccessIterator<T, C> &right) {
-            return (left.getPtr() != right.getPtr());
-        }
-
-        template <typename T, bool B, bool C>
-        bool operator>(const RandomAccessIterator<T, B> &left, const RandomAccessIterator<T, C> &right) {
-            return (left.getPtr() > right.getPtr());
-        }
-
-        template <typename T, bool B, bool C>
-        bool operator>=(const RandomAccessIterator<T, B> &left, const RandomAccessIterator<T, C> &right) {
-            return (left.getPtr() >= right.getPtr());
+            return !(left == right);
         }
 
         template <typename T, bool B, bool C>
@@ -203,20 +193,18 @@ namespace ft {
 
         template <typename T, bool B, bool C>
         bool operator<=(const RandomAccessIterator<T, B> &left, const RandomAccessIterator<T, C> &right) {
-            return (left.getPtr() <= right.getPtr());
+            return ((left < right) || (left == right));
         }
 
-    /*
-    Two iterators that compare equal, keep comparing equal after being both increased.
-    *a++
-    Can be decremented (if a dereferenceable iterator value precedes it).
-    *a--
+        template <typename T, bool B, bool C>
+        bool operator>(const RandomAccessIterator<T, B> &left, const RandomAccessIterator<T, C> &right) {
+            return !(left <= right);
+        }
 
-    a - b - to friend
-    For mutable iterators (non-constant iterators):
-    Can be dereferenced as an lvalue (if in a dereferenceable state).	*a = t
-
-     */
+        template <typename T, bool B, bool C>
+        bool operator>=(const RandomAccessIterator<T, B> &left, const RandomAccessIterator<T, C> &right) {
+            return !(left < right);
+        }
 
     template <typename Iter>
     class ReverseIterator {
@@ -264,7 +252,7 @@ namespace ft {
 
          reference operator[](difference_type num) const { return (*(_current + num)); }
     //     const reference operator[](difference_type num) const { return (*(this + num)); }
-    };
+    };  // ReverseIterator
 
     //  ReverseIterator templates
     template<typename Iter, typename D>
@@ -319,7 +307,7 @@ namespace ft {
 
 
 
-    /*  from video, extra functions  */
+    /*  from video, extra functions, not sure if needed
     //  todo check if distance <0
     template <typename Iterator, typename Distance>
     void advance_template(Iterator& iter, Distance dist, input_iterator_tag) {
@@ -336,6 +324,7 @@ namespace ft {
     void advance(InputIterator& it, Distance dist) {
         advance_template(it, dist, typename iterator_traits<InputIterator>::iterator_category());
     }
+     */
 
 }  //  namespace ft
 
