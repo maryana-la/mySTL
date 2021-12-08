@@ -101,6 +101,7 @@ namespace ft {
          RandomAccessIterator() : _ptr(NULL) {}
 
     //     RandomAccessIterator(const RandomAccessIterator& other) : _ptr(other._ptr) {}
+    //todo the same is next template?
          RandomAccessIterator(const RandomAccessIterator& other) : _ptr(const_cast<pointer>(other._ptr)) { }
 
          template <bool B>

@@ -1,11 +1,14 @@
-/The C++ Standart Template Library.pdf
+/other/The C++ Standart Template Library.pdf
+/.idea/
 /.idea/vcs.xml
 /.idea/modules.xml
 /.idea/.gitignore
 /.idea/ft_containers.iml
-/c++ lessons
+/other/c++ lessons
 
 /cmake-build-debug/
 /a.out
 /CMakeLists.txt
 /materials/
+
+/other/
