@@ -39,10 +39,10 @@ namespace ft {
     public:
         TreeIterator() : _ptr(NULL) {}
 //        TreeIterator(node_ptr other) : _ptr(other) {}
-        TreeIterator(TreeIterator& other const) : _ptr(other._ptr) {}
+        TreeIterator(const TreeIterator& other) : _ptr(other._ptr) {}
 
         template<bool B>
-        TreeIterator(TreeIterator<T, B> &other const, typename ft::enable_if<!B>::type* = 0) : _ptr(other._ptr) {}
+        TreeIterator(const TreeIterator<T, B> &other, typename ft::enable_if<!B>::type* = 0) : _ptr(other._ptr) {}
 
         TreeIterator& operator=(const TreeIterator& other) {
             this->_ptr = other._ptr;
@@ -106,9 +106,9 @@ namespace ft {
         }*/
 
         node_ptr predecessor (node_ptr x) {
-            if (tmp->left)
+            if (x->left)
                 return maxNode(x->left);
-            TreeNode* tmp = x->parent;
+            node_ptr tmp = x->parent;
             while (tmp && tmp->left == x) {
                 x = tmp;
                 tmp = tmp->parent;
@@ -138,14 +138,15 @@ namespace ft {
         node_ptr   successor(node_ptr x) {
             if (x->right != NULL)
                 return (minNode(x->right));
-            TreeNode*   tmp = x->parent;
+            node_ptr   tmp = x->parent;
             while (tmp->right == x) {
                 x = tmp;
                 tmp = tmp->parent;
             }
             return (tmp);
         }
-    }  //  class  TreeIterator
+
+    };  //  class  TreeIterator
 
     template <typename T, bool B, bool C>
     bool operator==(const TreeIterator<T, B> &left, const TreeIterator<T, C> &right) {
@@ -159,14 +160,14 @@ namespace ft {
 
 
 
-    template <typename Tr, typename Compare = std::less<Tr>, typename Alloc = std::allocator<Tr> >
+    template <typename T, typename Compare = std::less<T>, typename Alloc = std::allocator<T> >
     class Tree {
     public:
-        typedef Tr      key_type;
-        typedef Tr      value_type;
+        typedef T      key_type;
+        typedef T      value_type;
         typedef Compare key_compare;
-        typedef    dsdsd     value_compare;
-        typedef TreeNode<Tr>    node_type;
+        typedef Compare value_compare;
+        typedef TreeNode<T>    node_type;
         typedef node_type*      node_pointer;
 
         typedef Alloc                               allocator_type;
@@ -176,13 +177,13 @@ namespace ft {
         typedef const T*                            const_pointer;
         typedef ptrdiff_t                           difference_type;
         typedef size_t                              size_type;
-        typedef ft::TreeIterator<Tr, false>         iterator;
-        typedef ft::TreeIterator<Tr, true>          const_iterator;
+        typedef ft::TreeIterator<T, false>         iterator;
+        typedef ft::TreeIterator<T, true>          const_iterator;
         typedef ft::ReverseIterator<iterator>       reverse_iterator;
         typedef ft::ReverseIterator<const_iterator> const_reverse_iterator;
 
     private:
-        typename allocator_type::template rebind<Node>::other _node_alloc;
+        typename allocator_type::template rebind<TreeNode>::other _node_alloc;
         allocator_type _alloc;
         Compare _cmp;
         node_pointer _nil;
@@ -194,7 +195,8 @@ namespace ft {
     public:
         explicit Tree(const key_compare cmp = key_compare(), const allocator_type& alloc = allocator_type()) :
             _alloc(alloc), _cmp(cmp) {
-            _nil = _node_alloc.allocate(1);
+//            _nil = _node_alloc.allocate(1);
+            _nil = new TreeNode<T>;
             _nil->color = BLACK;
             _nil->left = _nil;
             _nil->right = _nil;
@@ -234,10 +236,11 @@ namespace ft {
         iterator end () { return iterator (_end); }
         const_iterator end () const { return const_iterator(_end); }
 
-        reverse_iterator rbegin() { return reverse_iterator(_end); }
+    /*    reverse_iterator rbegin() { return reverse_iterator(_end); }
         const_reverse_iterator rbegin() { return const_reverse_iterator(_end); }
+
         reverse_iterator rend() { return reverse_iterator(_begin); }
-        const_reverse_iterator rend() { return const_reverse_iterator(_begin); }
+        const_reverse_iterator rend() { return const_reverse_iterator(_begin); }   */
 
         size_type size() const { return _size; }
         size_type max_size() const { return _alloc.max_size(); } //todo or node_alloc
@@ -252,8 +255,156 @@ namespace ft {
 
 
 
+        /* only tree functions */
+        node_pointer searchTree(node_pointer node, key_type key) {
+            if (node == _nil || key == node->value)
+                return node;
+            if (key < node->value)
+                return (searchTree(node->left, key));
+            return (searchTree(node->right, key));
+        }
 
-    }  //  class Tree
+        node_pointer find(key_type key) {
+            return (searchTree(_root, key));
+        }
+
+        void preOrderPrint() {
+            preOrderPrintUtil(_root);
+        }
+
+        void insert(const value_type val) {
+            /* create new node */
+//            node_pointer node = _node_alloc.allocate(1);
+            node_pointer node = new TreeNode<T>;
+            node->value = val;
+            node->color = RED;
+            node->left = _nil;
+            node->right = _nil;
+            node->parent = _nil;
+
+            /* if tree is empty, new node is root and black */
+            if (_root == _nil) {
+                _root = node;
+                node->color = BLACK;
+                return ;
+            }
+
+            /* find position for a new node */
+            node_pointer tmp = _root;
+            node_pointer tmpParent = NULL;
+            while (tmp != _nil) {
+                tmpParent = tmp;
+                if (node->value < tmp->value)
+                    tmp = tmp->left;
+                else
+                    tmp = tmp->right;
+            }
+
+            /* insert new node on the left or right */
+            node->parent = tmpParent;
+            if (tmpParent->value > node->value)
+                tmpParent->left = node;
+            else
+                tmpParent->right = node;
+
+            /* if parent of new node is black OR grandparent is _nil - return */
+            if (tmpParent->color == BLACK || node->parent->parent == _nil)
+                return ;
+
+            balanceInsert(node);
+        }
+
+        void balanceInsert(node_pointer added) {
+            node_pointer uncle;
+            while (added->parent->color == RED) {
+                if (added->parent == added->parent->parent->left)
+                    uncle = added->parent->parent->right;
+                else if (added->parent == added->parent->parent->right)
+                    uncle = added->parent->parent->left;
+
+                /* if uncle is red - recolor parent and uncle; if grandparent != root - recolor it */
+                if (uncle->color == RED) {
+                    uncle->color = BLACK;
+                    added->parent->color = BLACK;
+                    if (added->parent->parent != _root)
+                        added->parent->parent->color = RED;
+
+                    //todo add recheck
+                } else {
+                    if (added->parent == added->parent->parent->right) {
+                        if (added == added->parent->left) {
+                            added = added->parent;
+                            rotateRight(added);
+                        }
+                        //todo first rotate, than recolor
+                        added->parent->color = BLACK;
+                        added->parent->parent->color = RED;
+                        rotateLeft(added->parent->parent);
+                    } else {
+                        if (added == added->parent->right) {
+                            added = added->parent;
+                            rotateLeft(added);
+                        }
+                        added->parent->color = BLACK;
+                        added->parent->parent->color = RED;
+                        rotateRight(added->parent->parent);
+                    }
+                }
+                if (added == _root)
+                    break;
+            }
+//            _root->color = BLACK; anyway shoul always be true
+        }
+
+        /* make tmp a new head of subtree: update tmp->parent info -> update links in tmp->parent node
+         * -> update node->parent -> move tmp->left to node->right -> update tmp->left info */
+        void rotateLeft(node_pointer node) {
+            node_pointer tmp = node->right;
+            tmp->parent = node->parent;
+            if (tmp->parent == _nil)
+                _root = tmp;
+            else if (node->parent->left == node)
+                node->parent->left = tmp;
+            else
+                node->parent->right = tmp;
+            node->parent = tmp;
+
+            node->right = tmp->left;
+            if (tmp->left != _nil)
+                tmp->left->parent = node;
+            tmp->left = node;
+        }
+
+        /* make tmp a new head of subtree: update tmp->parent info -> update links in tmp->parent node
+         * -> update node->parent -> move tmp->right to node->left -> update tmp->right info */
+        void rotateRight(node_pointer node) {
+            node_pointer tmp = node->left;
+            tmp->parent = node->parent;
+            if (tmp->parent == _nil)
+                _root = tmp;
+            else if (tmp->parent->left == node)
+                tmp->parent->left = tmp;
+            else
+                tmp->parent->right = tmp;
+            node->parent = tmp;
+
+            node->left = tmp->right;
+            if (tmp->right != _nil)
+                tmp->right->parent = node;
+            tmp->right = node;
+        }
+
+    private:
+        void preOrderPrintUtil(node_pointer tmp) {
+            if (tmp == _nil)
+                return;
+            std::cout << tmp->value << " ";
+            preOrderPrintUtil(tmp->left);
+            preOrderPrintUtil(tmp->right);
+        }
+
+
+    };  //  class Tree
 
 
 
