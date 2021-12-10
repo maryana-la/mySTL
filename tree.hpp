@@ -183,7 +183,7 @@ namespace ft {
         typedef ft::ReverseIterator<const_iterator> const_reverse_iterator;
 
     private:
-        typename allocator_type::template rebind<TreeNode>::other _node_alloc;
+//        typename allocator_type::template rebind<TreeNode>::other _node_alloc;
         allocator_type _alloc;
         Compare _cmp;
         node_pointer _nil;
@@ -208,7 +208,7 @@ namespace ft {
         //todo check if constructor is needed
         Tree (const value_type *F, const value_type *L, const key_compare cmp = key_compare(), const allocator_type& alloc = allocator_type()) :
             _alloc(alloc), _cmp(cmp ){
-            _nil = _node_alloc.allocate(1);
+//            _nil = _node_alloc.allocate(1);
             _nil->color = BLACK;
             _nil->left = _nil;
             _nil->right = _nil;
@@ -219,7 +219,7 @@ namespace ft {
         }
 
         Tree (const Tree &other) : _alloc(other._alloc), _cmp(other._cmp ){
-                _nil = _node_alloc.allocate(1);
+//                _nil = _node_alloc.allocate(1);
                 _nil->color = BLACK;
                 _nil->left = _nil;
                 _nil->right = _nil;
@@ -270,6 +270,10 @@ namespace ft {
 
         void preOrderPrint() {
             preOrderPrintUtil(_root);
+        }
+
+        void inOrderPrint() {
+            inOrderPrintUtil(_root);
         }
 
         void insert(const value_type val) {
@@ -394,6 +398,11 @@ namespace ft {
             tmp->right = node;
         }
 
+
+        void deleteNode(const value_type val) {
+
+        }
+
     private:
         void preOrderPrintUtil(node_pointer tmp) {
             if (tmp == _nil)
@@ -401,6 +410,14 @@ namespace ft {
             std::cout << tmp->value << " ";
             preOrderPrintUtil(tmp->left);
             preOrderPrintUtil(tmp->right);
+        }
+        void inOrderPrintUtil(node_pointer tmp) {
+            if (tmp == _nil)
+                return;
+            inOrderPrintUtil(tmp->left);
+            std::cout << tmp->value << " ";
+            std::cout << tmp->color << "c ";
+            inOrderPrintUtil(tmp->right);
         }
 
 
