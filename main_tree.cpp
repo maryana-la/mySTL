@@ -51,5 +51,23 @@ int main ()
     mytree.insert(0);
 
     mytree.inOrderPrint();
+    std::cout << std::endl;
+
+
+    mytree.deleteNode(7);
+    mytree.inOrderPrint();
+    std::cout << std::endl;
+//    mytree.deleteNode(12);
+//    mytree.inOrderPrint();
+//    std::cout << std::endl;
+    mytree.deleteNode(35);
+    mytree.inOrderPrint();
+    std::cout << std::endl;
+    mytree.deleteNode(0);
+    mytree.inOrderPrint();
+    std::cout << std::endl;
+    mytree.deleteNode(15);
+    mytree.inOrderPrint();
+    std::cout << std::endl;
     return 0;
 }
