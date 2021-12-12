@@ -75,78 +75,6 @@ namespace ft {
 
         template <typename T1, bool B1, bool C1>
         friend bool operator==(const TreeIterator<T1, B1> &left, const TreeIterator<T1, C1> &right);
-
-//        node_ptr maxNode(node_ptr tmp) {
-//            while(tmp->right)
-//                tmp = tmp->right;
-//            return tmp;
-//        }
-//
-//        node_ptr minNode (node_ptr tmp) {
-//            while (tmp->left)
-//                tmp = tmp->left;
-//            return tmp;
-//        }
-///*
-//        // find the predecessor of a given node
-//        NodePtr predecessor(NodePtr x) {
-//            // if the left subtree is not null,
-//            // the predecessor is the rightmost node in the
-//            // left subtree
-//            if (x->left != TNULL) {
-//                return maximum(x->left);
-//            }
-//
-//            NodePtr y = x->parent;
-//            while (y != TNULL && x == y->left) {
-//                x = y;
-//                y = y->parent;
-//            }
-//
-//            return y;
-//        }*/
-//
-//        node_ptr predecessor (node_ptr x) {
-//            if (x->left)
-//                return maxNode(x->left);
-//            node_ptr tmp = x->parent;
-//            while (tmp && tmp->left == x) {
-//                x = tmp;
-//                tmp = tmp->parent;
-//            }
-//            return tmp;
-//        }
-
-/* get next node inorder */
-/*
-        NodePtr successor(NodePtr x) {
-            // if the right subtree is not null,
-            // the successor is the leftmost node in the
-            // right subtree
-            if (x->right != TNULL) {
-                return minimum(x->right);
-            }
-
-            // else it is the lowest ancestor of x whose
-            // left child is also an ancestor of x.
-            NodePtr y = x->parent;
-            while (y != TNULL && x == y->right) {
-                x = y;
-                y = y->parent;
-            }
-            return y;
-        } */
-//        node_ptr   successor(node_ptr x) {
-//            if (x->right != NULL)
-//                return (minNode(x->right));
-//            node_ptr   tmp = x->parent;
-//            while (tmp->right == x) {
-//                x = tmp;
-//                tmp = tmp->parent;
-//            }
-//            return (tmp);
-//        }
-
     };  //  class  TreeIterator
 
     template <typename T, bool B, bool C>
@@ -158,8 +86,6 @@ namespace ft {
     bool operator!=(const TreeIterator<T, B> &left, const TreeIterator<T, C> &right) {
         return !(left == right);
     }
-
-
 
     template <typename T, typename Compare = std::less<T>, typename Alloc = std::allocator<T> >
     class Tree {
@@ -194,16 +120,23 @@ namespace ft {
         size_type _size;
 
     public:
+
+        /*
+         *  Constructors
+         */
+
         explicit Tree(const key_compare cmp = key_compare(), const allocator_type& alloc = allocator_type()) :
             _alloc(alloc), _cmp(cmp) {
             _nil = _node_alloc.allocate(1);
             _nil = new TreeNode<T>;
             _nil->color = BLACK;
-            _nil->left = _nil;
-            _nil->right = _nil;
+            _nil->left = NULL;  //_nil
+            _nil->right = NULL;
             _nil->parent = _nil;
             _root = _nil;
             _size = 0;
+
+            _end = _nil;
         }
 
         //todo check if constructor is needed
@@ -232,25 +165,92 @@ namespace ft {
 
         Tree& operator=(const Tree& other) {}
 
-        iterator begin() { return iterator(_begin); }
-        const_iterator begin () const { return const_iterator(_begin); }
+
+        /*
+         *  Iterators
+         */
+
+        iterator begin() { return iterator(minNode(_root)); }
+        const_iterator begin () const { return const_iterator(minNode(_root)); }
         iterator end () { return iterator (_end); }
         const_iterator end () const { return const_iterator(_end); }
 
-    /*    reverse_iterator rbegin() { return reverse_iterator(_end); }
-        const_reverse_iterator rbegin() { return const_reverse_iterator(_end); }
+        reverse_iterator rbegin() { return reverse_iterator(maxNode(_root)); }
+        const_reverse_iterator rbegin() const { return const_reverse_iterator(maxNode(_root)); }
+        reverse_iterator rend() { return reverse_iterator(minNode(_root)); }
+        const_reverse_iterator rend() const { return const_reverse_iterator(minNode(_root)); }
 
-        reverse_iterator rend() { return reverse_iterator(_begin); }
-        const_reverse_iterator rend() { return const_reverse_iterator(_begin); }   */
+        /*
+         *  Capacity
+         */
 
         size_type size() const { return _size; }
-        size_type max_size() const { return _alloc.max_size(); } //todo or node_alloc
-
+        size_type max_size() const { return _alloc.max_size(); /* _node_alloc.max_size();*/ } //todo or node_alloc
         bool empty() const { return (_size == 0);}
+
+        /*
+         *  Element access
+         */
+
+//        mapped_type& operator[] (const key_type& k); todo write func
+
+
+        /*
+         *  Modifiers
+         */
+
+//        insert
+//                Insert elements (public member function )
+//        erase
+//                Erase elements (public member function )
+//        swap
+//                Swap content (public member function )
+//        clear
+
+        /*
+         *  Observers todo write
+         */
+
+        key_compare key_comp() const { return _cmp; }
+
+
+        /*
+         *  Operations
+         */
+
+        iterator find (const key_type& k) {
+            return (iterator(searchTree(_root, k)));
+        }
+
+        const_iterator find (const key_type& k) const {
+            return (const_iterator(searchTree(_root, k)));
+        }
+
+        size_type count (const key_type& k) const {
+            node_pointer tmp = searchTree(_root, k);
+            if (tmp == _nil)
+                return 0;
+            return 1;
+        }
+
+        iterator lower_bound (const key_type& k) {
+
+        }
+        const_iterator lower_bound (const key_type& k) const {}
+
+        iterator upper_bound (const key_type& k) {}
+        const_iterator upper_bound (const key_type& k) const {}
+
+        pair<const_iterator,const_iterator> equal_range (const key_type& k) const {}
+        pair<iterator,iterator>             equal_range (const key_type& k) {}
+
+        /*
+         *  Allocator
+         */
 
         allocator_type  get_allocator() const { return _alloc; }
 
-        key_compare key_comp() const { return _cmp; }
+
 
 //        value_compare value_comp const { return(value_compare(key_comp())); };
 
@@ -265,9 +265,6 @@ namespace ft {
             return (searchTree(node->right, key));
         }
 
-        node_pointer find(key_type key) {
-            return (searchTree(_root, key));
-        }
 
         void preOrderPrint() {
             preOrderPrintUtil(_root);
@@ -281,13 +278,14 @@ namespace ft {
             /* create new node */
             node_pointer node = _node_alloc.allocate(1);
 //            node_pointer node = new TreeNode<T>;
-//            node->value = val; //
-            _node_alloc.construct(&node->value, val);
+            node->value = val; //
+            _alloc.construct(&node->value, val);
             node->color = RED;
             node->left = _nil;
             node->right = _nil;
             node->parent = _nil;
 
+            _size++;
             /* if tree is empty, new node is root and black */
             if (_root == _nil) {
                 _root = node;
@@ -427,6 +425,10 @@ namespace ft {
             inOrderPrintUtil(tmp->right);
         }
 
+        node_pointer findUtil(key_type key) {
+            return (searchTree(_root, key));
+        }
+
         void deleteNodeUtil(node_pointer root_tmp, const value_type val) {
             /* find node to delete */
             node_pointer z = searchTree(root_tmp, val);
@@ -436,7 +438,7 @@ namespace ft {
                 return ;
             }
 //            if (x->color == RED && (x->left == _nil || x->right == _nil))
-
+            _size--;
             y = z;
             int y_orig_color = y->color;
 
