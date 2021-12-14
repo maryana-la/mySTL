@@ -6,14 +6,14 @@
 namespace ft {
 
     template<typename Key, typename Value, typename Compare = std::less<Key>,
-            typename Alloc = std::allocator<ft::pair<const Key, Value> > >
+            typename Alloc = std::allocator<ft::pair<Key, Value> > >
     class map {
     public:
         typedef Key key_type;
         typedef Value mapped_type;
-        typedef ft::pair<const Key, Value> value_type;
+        typedef ft::pair<Key, Value> value_type;
         typedef Compare key_compare;
-        typedef ft::TreeNode<ft::pair<const Key, Value> > node_type;
+        typedef ft::TreeNode<ft::pair<Key, Value> > node_type;
         typedef node_type *node_pointer;
 
         typedef Alloc allocator_type;
@@ -30,19 +30,18 @@ namespace ft {
 
         class value_compare {
             friend class map;
-
         protected:
             Compare comp;
 
-            value_compare(Compare c) : comp(c) {}  // constructed with map's comparison object
+            explicit value_compare(Compare c) : comp(c) {}  // constructed with map's comparison object
         public:
             bool operator()(const value_type &x, const value_type &y) const {
                 return comp(x.first, y.first);
             }
-        };
+        };  // class value_compare
 
     private:
-        typedef ft::tree<key_type, mapped_type, value_type> tree_type;
+        typedef ft::tree<key_type, mapped_type, key_compare, allocator_type> tree_type;
         tree_type _tree;
         key_compare _comp;
 
@@ -66,7 +65,7 @@ namespace ft {
         }
 
         ~map() {
-            _tree.~tree();
+//            _tree.~tree();
         }
 
         map &operator=(const map &x) {
@@ -79,21 +78,21 @@ namespace ft {
          *  Iterators
          */
 
-        iterator begin() { return _tree.begin(); }
+        iterator begin() { return iterator(_tree.beginNode()); }
 
-        const_iterator begin() const { return const_iterator(_tree.begin()); }
+        const_iterator begin() const { return const_iterator(_tree.beginNode()); }
 
-        iterator end() { return iterator(_tree.end()); }
+        iterator end() { return iterator(_tree.endNode()); }
 
-        const_iterator end() const { return const_iterator(_tree.end()); }
+        const_iterator end() const { return const_iterator(_tree.endNode()); }
 
-        reverse_iterator rbegin() { return reverse_iterator(_tree.rbegin()); }
+        reverse_iterator rbegin() { return reverse_iterator(_tree.rbeginNode()); }
 
-        const_reverse_iterator rbegin() const { return const_reverse_iterator(_tree.rbegin()); }
+        const_reverse_iterator rbegin() const { return const_reverse_iterator(_tree.rbeginNode()); }
 
-        reverse_iterator rend() { return reverse_iterator(_tree.rend()); }
+        reverse_iterator rend() { return reverse_iterator(_tree.rendNode()); }
 
-        const_reverse_iterator rend() const { return const_reverse_iterator(_tree.rend()); }
+        const_reverse_iterator rend() const { return const_reverse_iterator(_tree.rendNode()); }
 
         /*
          *  Capacity

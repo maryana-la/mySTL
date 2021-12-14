@@ -73,6 +73,48 @@ namespace ft {
             return tmp;
         }
 
+        /* find the predecessor of a given node */
+        node_ptr predecessor (node_ptr x) const {
+            if (x->left)
+                return maxNode(x->left);
+            node_ptr tmp = x->parent;
+            while (tmp && tmp->left == x) {
+                x = tmp;
+                tmp = tmp->parent;
+            }
+            return tmp;
+        }
+
+        /* find the successor of a given node */
+        node_ptr   successor(node_ptr x) const {
+            if (x->right != NULL)
+                return (minNode(x->right));
+            node_ptr   tmp = x->parent;
+            while (tmp->right == x) {
+                x = tmp;
+                tmp = tmp->parent;
+            }
+            return (tmp);
+        }
+
+        node_ptr maxNode(node_ptr node) const {
+            node_ptr tmp = node;
+            if (!tmp)
+                return NULL;
+            while(tmp->right)
+                tmp = tmp->right;
+            return tmp;
+        }
+
+        node_ptr minNode (node_ptr node) const {
+            node_ptr tmp = node;
+            if (!tmp)
+                return NULL;
+            while (tmp->left)
+                tmp = tmp->left;
+            return tmp;
+        }
+
         template <typename T1, bool B1, bool C1>
         friend bool operator==(const TreeIterator<T1, B1> &left, const TreeIterator<T1, C1> &right);
     };  //  class  TreeIterator
@@ -87,15 +129,15 @@ namespace ft {
         return !(left == right);
     }
 
-    template <typename Key, typename Value, typename PairNode, typename Compare = std::less<Key>, typename Alloc = std::allocator<ft::pair<const Key, Value> > >
+    template <typename Key, typename Value, typename Compare = std::less<Key>, typename Alloc = std::allocator<ft::pair<Key, Value> > >
     class tree {
     public:
         typedef Key      key_type;
         typedef Value   mapped_type;
-        typedef PairNode      value_type;
+        typedef ft::pair<Key, Value>      value_type;
         typedef Compare key_compare;
-        typedef Compare value_compare;
-        typedef TreeNode<PairNode>    node_type;
+//        typedef Compare value_compare;
+        typedef TreeNode<value_type>    node_type;
         typedef node_type*      node_pointer;
 
         typedef Alloc                               allocator_type;
@@ -153,13 +195,13 @@ namespace ft {
 
         tree& operator=(const tree& other) {
             clear();
-            insertIter(other.begin(), other.end());
+            insertIter(other.beginNode(), other.endNode());
             return *this;
         }
 
         ~tree() {
             clear();
-            _alloc.destroy(_nil);
+//            _node_alloc.destroy(_nil);
             _node_alloc.deallocate(_nil, 1);
             _size = 0;
         }
@@ -168,15 +210,15 @@ namespace ft {
          *  Iterators
          */
 
-        iterator begin() { return iterator(minNode(_root)); }
-        const_iterator begin () const { return const_iterator(minNode(_root)); }
-        iterator end () { return iterator (_end); }
-        const_iterator end () const { return const_iterator(_end); }
+        node_pointer beginNode() const { return minNode(_root); }
+//        const_iterator begin () const { return const_iterator(minNode(_root)); }
+        node_pointer endNode () const { return (_end); }
+//        const_iterator end () const { return const_iterator(_end); }
 
-        reverse_iterator rbegin() { return reverse_iterator(maxNode(_root)); }
-        const_reverse_iterator rbegin() const { return const_reverse_iterator(maxNode(_root)); }
-        reverse_iterator rend() { return reverse_iterator(minNode(_root)); }
-        const_reverse_iterator rend() const { return const_reverse_iterator(minNode(_root)); }
+        node_pointer rbeginNode() const { return (maxNode(_root)); }
+//        const_reverse_iterator rbegin() const { return const_reverse_iterator(maxNode(_root)); }
+        node_pointer rendNode() const { return (minNode(_root)); }
+//        const_reverse_iterator rend() const { return const_reverse_iterator(minNode(_root)); }
 
         /*
          *  Capacity
@@ -207,13 +249,13 @@ namespace ft {
             }
         }
 
-        void insertNode(const key_type val) {
+        void insertNode(const value_type val) {
             /* create new node */
             node_pointer node = _node_alloc.allocate(1);
             try {
 //                node_pointer node = new TreeNode<T>;
-//                node->value = val; //
-                _alloc.construct(&node->value, val);
+                node->value = val; //
+//                _node_alloc.construct(&node->value, val);
                 node->color = RED;
                 node->left = _nil;
                 node->right = _nil;
@@ -262,7 +304,7 @@ namespace ft {
                 deleteNode(*first);
         }
 
-        void deleteNode(const key_type val) {
+        void deleteNode(const value_type val) {
             deleteNodeUtil(_root, val);
         }
 
@@ -276,9 +318,23 @@ namespace ft {
             std::swap(_size, _size);
         }
 
-        void clear() {
-            deleteIter(begin(), end());
-            _size = 0;
+        void clear () {
+            clearUtil(_root);
+        }
+
+        void clearUtil(node_pointer head) {
+//            deleteIter(static_cast<iterator>(beginNode()), static_cast<iterator>(endNode()));
+//            _size = 0;
+
+
+            if (head == _nil)
+                return ;
+            if (head->left)
+                clearUtil(head->left);
+            if (head->right)
+                clearUtil(head->right);
+//            _node_alloc.destroy(&head->value);
+            _node_alloc.deallocate(head, 1);
         }
 
         /*
@@ -565,41 +621,41 @@ namespace ft {
             v->parent = u->parent;
         }
 
-        node_pointer maxNode(node_pointer tmp) {
+        node_pointer maxNode(node_pointer tmp) const {
             while(tmp->right != _nil)
                 tmp = tmp->right;
             return tmp;
         }
 
-        node_pointer minNode (node_pointer tmp) {
+        node_pointer minNode (node_pointer tmp) const {
             while (tmp->left != _nil)
                 tmp = tmp->left;
             return tmp;
         }
 
-        /* find the predecessor of a given node */
-        node_pointer predecessor (node_pointer x) {
-            if (x->left)
-                return maxNode(x->left);
-            node_pointer tmp = x->parent;
-            while (tmp && tmp->left == x) {
-                x = tmp;
-                tmp = tmp->parent;
-            }
-            return tmp;
-        }
-
-        /* find the successor of a given node */
-        node_pointer   successor(node_pointer x) {
-            if (x->right != NULL)
-                return (minNode(x->right));
-            node_pointer   tmp = x->parent;
-            while (tmp->right == x) {
-                x = tmp;
-                tmp = tmp->parent;
-            }
-            return (tmp);
-        }
+//        /* find the predecessor of a given node */
+//        node_pointer predecessor (node_pointer x) {
+//            if (x->left)
+//                return maxNode(x->left);
+//            node_pointer tmp = x->parent;
+//            while (tmp && tmp->left == x) {
+//                x = tmp;
+//                tmp = tmp->parent;
+//            }
+//            return tmp;
+//        }
+//
+//        /* find the successor of a given node */
+//        node_pointer   successor(node_pointer x) {
+//            if (x->right != NULL)
+//                return (minNode(x->right));
+//            node_pointer   tmp = x->parent;
+//            while (tmp->right == x) {
+//                x = tmp;
+//                tmp = tmp->parent;
+//            }
+//            return (tmp);
+//        }
 
 
     };  //  class Tree

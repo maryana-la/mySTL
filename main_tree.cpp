@@ -486,35 +486,35 @@ int test_erase_hbaudet()
     return 0;
 }
 
-void
-test_at_find(void)
-{
-    TESTED_NS::map<int, int> mp;
-    mp[1] = 23;
-    mp[2] = 24;
-    mp[3] = 25;
-    mp[4] = 26;
-    mp[5] = 27;
-    mp[6] = 28;
-    mp[7] = 29;
-    mp[8] = 210;
-    int idx = 4;
-    std::cout << "at " << idx << " there is " << mp.at(idx) << std::endl;
-    int noidx = 100;
-    try
-    {
-        std::cout << "at " << noidx << " there is " << mp.at(noidx);
-        std::cout << std::endl;
-    }
-    catch (const std::out_of_range &e)
-    {
-        std::cout << e.what() << std::endl;
-    }
-
-    printPair(*(mp.find(6)));
-    std::cout << (mp.end() == mp.find(0)) << std::endl;
-    std::cout << (mp.end() == mp.find(10)) << std::endl;
-}
+//void
+//test_at_find(void)
+//{
+//    TESTED_NS::map<int, int> mp;
+//    mp[1] = 23;
+//    mp[2] = 24;
+//    mp[3] = 25;
+//    mp[4] = 26;
+//    mp[5] = 27;
+//    mp[6] = 28;
+//    mp[7] = 29;
+//    mp[8] = 210;
+//    int idx = 4;
+//    std::cout << "at " << idx << " there is " << mp.at(idx) << std::endl;
+//    int noidx = 100;
+//    try
+//    {
+//        std::cout << "at " << noidx << " there is " << mp.at(noidx);
+//        std::cout << std::endl;
+//    }
+//    catch (const std::out_of_range &e)
+//    {
+//        std::cout << e.what() << std::endl;
+//    }
+//
+//    printPair(*(mp.find(6)));
+//    std::cout << (mp.end() == mp.find(0)) << std::endl;
+//    std::cout << (mp.end() == mp.find(10)) << std::endl;
+//}
 
 void
 test_reverseit(void)
@@ -707,8 +707,8 @@ int main()
     test_ctors_assign();
     std::cout << "---------------- swap ------------------" << std::endl;
     test_swap();
-    std::cout << "---------------- at/find ------------------" << std::endl;
-    test_at_find();
+//    std::cout << "---------------- at/find ------------------" << std::endl;
+//    test_at_find();
     std::cout << "---------------- reverse it ------------------" << std::endl;
     test_reverseit();
     std::cout << "---------------- count ------------------" << std::endl;
