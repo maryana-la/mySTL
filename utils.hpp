@@ -105,20 +105,25 @@ namespace ft {
         typedef T1  first_type;
         typedef T2  second_type;
 
-        T1 first;
-        T2 second;
+        first_type first;
+        second_type second;
 
         /* constructors */
         pair() : first(), second() {}
 
         pair(const first_type& a, second_type& b) : first(a), second(b) {}
 
+        template<class U, class V>
+        pair(const std::pair<U, V>& pr) : first(pr.first), second(pr.second) { }
+
         template<typename U, typename V>
         pair(const pair<U,V>& pr) : first(pr.first), second(pr.second) {}
 
-        pair& operator= (const pair& other) {
-            first = other.first;
-            second = other.second;
+        pair& operator=(const pair& other) {
+            if (*this == other)
+                return *this;
+            this->first = other.first;
+            this->second = other.second;
             return *this;
         }
     };  //  struct pair

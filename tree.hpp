@@ -27,7 +27,8 @@ namespace ft {
     class TreeIterator {
     public:
         typedef T value_type;
-        typedef std::ptrdiff_t difference_type;
+        typedef ptrdiff_t difference_type;
+        typedef size_t size_type;
         typedef typename ft::conditional<IsConst, const T *, T *>::type pointer;
         typedef typename ft::conditional<IsConst, const T &, T &>::type reference;
         typedef std::bidirectional_iterator_tag iterator_category;
@@ -39,16 +40,20 @@ namespace ft {
 
     public:
         TreeIterator() : _ptr(NULL) {}
-//        TreeIterator(node_ptr other) : _ptr(other) {}
-        TreeIterator(const TreeIterator& other) : _ptr(other._ptr) {}
+        TreeIterator(const node_ptr other) : _ptr(other) {}
+
+        //todo diff here
+//        TreeIterator(const TreeIterator& other) : _ptr(const_cast<node_ptr>(other._ptr)) { }
 
         template<bool B>
         TreeIterator(const TreeIterator<T, B> &other, typename ft::enable_if<!B>::type* = 0) : _ptr(other._ptr) {}
 
-        TreeIterator& operator=(const TreeIterator& other) {
+        TreeIterator& operator=(TreeIterator const &other) {
             this->_ptr = other._ptr;
             return *this;
         }
+
+        ~TreeIterator() {}
 
         reference operator*() const { return static_cast<reference>(_ptr->value); }
         pointer operator->() const { return &(_ptr->value); }
@@ -77,9 +82,12 @@ namespace ft {
         node_ptr predecessor (node_ptr x) const {
             if (x->left)
                 return maxNode(x->left);
+            node_ptr prev = x;
             node_ptr tmp = x->parent;
-            while (tmp && tmp->left == x) {
-                x = tmp;
+            while (prev == tmp->left) {
+                if (prev == tmp)
+                    return tmp;
+                prev = tmp;
                 tmp = tmp->parent;
             }
             return tmp;
@@ -87,11 +95,15 @@ namespace ft {
 
         /* find the successor of a given node */
         node_ptr   successor(node_ptr x) const {
-            if (x->right != NULL)
+            if (x->right)
                 return (minNode(x->right));
-            node_ptr   tmp = x->parent;
-            while (tmp->right == x) {
-                x = tmp;
+
+            node_ptr prev = x;
+            node_ptr tmp = x->parent;
+            while (prev == tmp->right) {
+                if (prev == tmp)
+                    return tmp;
+                prev = tmp;
                 tmp = tmp->parent;
             }
             return (tmp);
@@ -115,10 +127,15 @@ namespace ft {
             return tmp;
         }
 
+        node_ptr getNode () const {
+            return _ptr;
+        }
+
         template <typename T1, bool B1, bool C1>
         friend bool operator==(const TreeIterator<T1, B1> &left, const TreeIterator<T1, C1> &right);
     };  //  class  TreeIterator
 
+    /* Templates for TreeIterator */
     template <typename T, bool B, bool C>
     bool operator==(const TreeIterator<T, B> &left, const TreeIterator<T, C> &right) {
         return (left._ptr == right._ptr);
@@ -129,16 +146,20 @@ namespace ft {
         return !(left == right);
     }
 
-    template <typename Key, typename Value, typename Compare = std::less<Key>, typename Alloc = std::allocator<ft::pair<Key, Value> > >
+
+
+    template <typename Key, typename Value, typename Node, typename Compare = std::less<Key>, typename Alloc = std::allocator<ft::pair<const Key, Value> > >
     class tree {
     public:
         typedef Key      key_type;
         typedef Value   mapped_type;
-        typedef ft::pair<Key, Value>      value_type;
+        typedef Node    value_type;
+//        typedef ft::pair<Key, Value>      value_type;
         typedef Compare key_compare;
 //        typedef Compare value_compare;
-        typedef TreeNode<value_type>    node_type;
-        typedef node_type*      node_pointer;
+
+        typedef TreeNode<value_type>    node_type; //mapnode
+        typedef node_type*      node_pointer;  //mapnode *
 
         typedef Alloc                               allocator_type;
         typedef value_type&                                  reference;
@@ -152,15 +173,28 @@ namespace ft {
         typedef ft::ReverseIterator<iterator>       reverse_iterator;
         typedef ft::ReverseIterator<const_iterator> const_reverse_iterator;
 
-    private:
-        typename allocator_type::template rebind<node_type>::other _node_alloc;
+        // http://www.cplusplus.com/reference/map/map/value_comp/
+        class value_compare { // in C++98, it is required to inherit binary_function<value_type,value_type,bool>
+            friend class tree;
+        protected:
+            Compare comp;
+            explicit value_compare(Compare c) : comp(c) {}  // constructed with map's comparison object
+        public:
+            bool operator()(const value_type &x, const value_type &y) const {
+                return comp(x.first, y.first);
+            }
+        };  // class value_compare
+
+    protected:
+        typename Alloc::template rebind<node_type>::other _node_alloc;
         allocator_type _alloc;
-        Compare _cmp;
+        key_compare _cmp;
+        size_type _size;
+
         node_pointer _nil;
         node_pointer _root;
         node_pointer _end;
-//        node_pointer _begin;
-        size_type _size;
+        node_pointer _begin;
 
     public:
 
@@ -168,18 +202,19 @@ namespace ft {
          *  Constructors
          */
 
-        tree(const key_compare cmp = key_compare(), const allocator_type& alloc = allocator_type()) :
+        explicit tree(const key_compare cmp = key_compare(), const allocator_type& alloc = allocator_type()) :
             _alloc(alloc), _cmp(cmp) {
-            _nil = _node_alloc.allocate(1);
-//            _nil = new TreeNode<value_type>;
-            _nil->color = BLACK;
-            _nil->left = NULL;  //_nil
-            _nil->right = NULL;
-            _nil->parent = _nil;
-            _root = _nil;
-            _size = 0;
 
+            _nil = _node_alloc.allocate(1); // _nil = new TreeNode<value_type>;
+            _nil->color = BLACK;
+            _nil->left = _nil;  //_nil
+            _nil->right = _nil;
+            _nil->parent = _nil;
+
+            _root = _nil;
             _end = _nil;
+            _begin = _nil;
+            _size = 0;
         }
 
         tree (const tree &other) : _alloc(other._alloc), _cmp(other._cmp ){
@@ -188,12 +223,19 @@ namespace ft {
             _nil->left = _nil;
             _nil->right = _nil;
             _nil->parent = _nil;
+
             _root = _nil;
+            _end = _nil;
+            _begin = _nil;
             _size = 0;
             insertIter(other.begin(), other.end());
         }
 
         tree& operator=(const tree& other) {
+            if (*this == other)
+                return *this;
+            _alloc = other._alloc;
+            _cmp = other._cmp;
             clear();
             insertIter(other.beginNode(), other.endNode());
             return *this;
@@ -210,15 +252,14 @@ namespace ft {
          *  Iterators
          */
 
-        node_pointer beginNode() const { return minNode(_root); }
-//        const_iterator begin () const { return const_iterator(minNode(_root)); }
-        node_pointer endNode () const { return (_end); }
-//        const_iterator end () const { return const_iterator(_end); }
-
-        node_pointer rbeginNode() const { return (maxNode(_root)); }
-//        const_reverse_iterator rbegin() const { return const_reverse_iterator(maxNode(_root)); }
-        node_pointer rendNode() const { return (minNode(_root)); }
-//        const_reverse_iterator rend() const { return const_reverse_iterator(minNode(_root)); }
+        iterator begin() { return iterator(beginNode()); }
+        const_iterator begin() const { return const_iterator(beginNode()); }
+        iterator end() { return iterator(endNode()); }
+        const_iterator end() const { return const_iterator(endNode()); }
+        reverse_iterator rbegin() { return reverse_iterator(rbeginNode()); }
+        const_reverse_iterator rbegin() const { return const_reverse_iterator(rbeginNode()); }
+        reverse_iterator rend() { return reverse_iterator(rendNode()); }
+        const_reverse_iterator rend() const { return const_reverse_iterator(rendNode()); }
 
         /*
          *  Capacity
@@ -228,88 +269,36 @@ namespace ft {
         size_type max_size() const { return _alloc.max_size(); /* _node_alloc.max_size();*/ } //todo or node_alloc
         bool empty() const { return (_size == 0);}
 
+
+
         /*
          *  Modifiers
          */
 
-        template <class InputIterator>
-        void insertIter(InputIterator first, InputIterator last,
-                        typename ft::enable_if<!ft::is_integral<InputIterator>::value>::type* = 0)
-        {
-            InputIterator it = first;
-            try {
-                for (; it != last; it++)
-                    insertNode(*it);
-            }
-            catch (...) {
-                InputIterator it1 = first;
-                for (; it1 != it; it++)
-                    deleteNode(*it1);
-                throw;
-            }
+        void erase(iterator position) {
+            node_pointer tmp = this->searchTreeIter(position);
+            if (tmp == this->_end)
+                return ;
+            this->deleteNodeUtil(tmp);
+//            delete tmp;
+            --this->_size;
         }
 
-        void insertNode(const value_type val) {
-            /* create new node */
-            node_pointer node = _node_alloc.allocate(1);
-            try {
-//                node_pointer node = new TreeNode<T>;
-                node->value = val; //
-//                _node_alloc.construct(&node->value, val);
-                node->color = RED;
-                node->left = _nil;
-                node->right = _nil;
-                node->parent = _nil;
-            }
-            catch (...) {
-                _node_alloc.deallocate(node, 1);
-                throw;
-            }
-
-            _size++;
-            /* if tree is empty, new node is root and black */
-            if (_root == _nil) {
-                _root = node;
-                node->color = BLACK;
-                return ;
-            }
-
-            /* find position for a new node */
-            node_pointer tmp = _root;
-            node_pointer tmpParent = NULL;
-            while (tmp != _nil) {
-                tmpParent = tmp;
-                if (node->value < tmp->value)
-                    tmp = tmp->left;
-                else
-                    tmp = tmp->right;
-            }
-
-            /* insert new node on the left or right */
-            node->parent = tmpParent;
-            if (tmpParent->value > node->value)
-                tmpParent->left = node;
-            else
-                tmpParent->right = node;
-
-            /* if parent of new node is black OR grandparent is _nil - return */
-            if (tmpParent->color == BLACK || node->parent->parent == _nil)
-                return ;
-
-            balanceInsert(node);
+        size_type   erase(const key_type& k) {
+            iterator it = find(k);
+            if (it == this->end())
+                return 0;
+            erase(it);
+            return 1;
         }
 
-        void deleteIter (iterator first, iterator last) {
+        void erase(iterator first, iterator last) {
             for (; first != last; first++)
-                deleteNode(*first);
+                erase(first);
         }
 
-        void deleteNode(const value_type val) {
-            deleteNodeUtil(_root, val);
-        }
-
-        void
-        swap(tree& other) {
+        //todo some diff here
+        void swap(tree& other) {
             std::swap(_alloc, other._alloc);
             std::swap(_cmp, other._cmp);
             std::swap(_nil, other._nil);
@@ -322,47 +311,82 @@ namespace ft {
             clearUtil(_root);
         }
 
-        void clearUtil(node_pointer head) {
-//            deleteIter(static_cast<iterator>(beginNode()), static_cast<iterator>(endNode()));
-//            _size = 0;
 
-
-            if (head == _nil)
-                return ;
-            if (head->left)
-                clearUtil(head->left);
-            if (head->right)
-                clearUtil(head->right);
-//            _node_alloc.destroy(&head->value);
-            _node_alloc.deallocate(head, 1);
-        }
 
         /*
          *  Operations
          */
 
         iterator find (const key_type& k) {
-            return (iterator(searchTree(_root, k)));
+            return (iterator(findUtil(k)));
         }
 
         const_iterator find (const key_type& k) const {
-            return (const_iterator(searchTree(_root, k)));
+            return (const_iterator(findUtil(k)));
         }
 
         size_type count (const key_type& k) const {
-            node_pointer tmp = searchTree(_root, k);
+            node_pointer tmp = findUtil(k);
             if (tmp == _nil)
                 return 0;
             return 1;
         }
 
-        iterator lower_bound (const key_type& k) {
-
+        //todo make diff all 4 funcs below
+        virtual iterator			lower_bound(const key_type& k) {
+            iterator	it = this->begin(), ite = this->end();
+            while (it != ite) {
+                if (this->itemcompare(*it, k) == false)
+                    break ;
+                ++it;
+            }
+            return it;
         }
-        const_iterator lower_bound (const key_type& k) const {}
+        virtual const_iterator	lower_bound(const key_type& k) const {
+            const_iterator	it = this->begin(), ite = this->end();
+            while (it != ite) {
+                if (this->itemcompare(*it, k) == false)
+                    break ;
+                ++it;
+            }
+            return it;
+        }
+        virtual iterator			upper_bound(const key_type& k) {
+            iterator	it = this->begin(), ite = this->end();
+            while (it != ite) {
+                if (this->itemcompare(k, *it))
+                    break ;
+                ++it;
+            }
+            return it;
+        }
+        virtual const_iterator			upper_bound(const key_type& k) const {
+            const_iterator it = this->begin(), ite = this->end();
+            while (it != ite) {
+                if (this->itemcompare(k, *it))
+                    break ;
+                ++it;
+            }
+            return it;
+        }
 
-        iterator upper_bound (const key_type& k) {}
-        const_iterator upper_bound (const key_type& k) const {}
+        ft::pair<const_iterator, const_iterator> equal_range(const key_type &k) const {
+            return (ft::make_pair(const_iterator(lower_bound(k)), const_iterator(upper_bound(k))));
+        }
+
+        ft::pair<iterator, iterator> equal_range(const key_type &k) {
+            return (ft::make_pair(iterator(lower_bound(k)), iterator(upper_bound(k))));
+        }
+
+        /*
+         *  Observers
+         */
+
+        key_compare key_comp() const { return _cmp; }
+        value_compare value_comp() const { return value_compare(_cmp); }
+
+//        value_compare value_comp const { return(value_compare(key_comp())); };
+
 
         void preOrderPrint() {
             preOrderPrintUtil(_root);
@@ -372,18 +396,13 @@ namespace ft {
             inOrderPrintUtil(_root);
         }
 
-        pair<const_iterator,const_iterator> equal_range (const key_type& k) const {}
-        pair<iterator,iterator>             equal_range (const key_type& k) {}
-
         /*
          *  Allocator
          */
 
         allocator_type  get_allocator() const { return _alloc; }
 
-//        value_compare value_comp const { return(value_compare(key_comp())); };
-
-    private:
+    protected:
 
 
         void preOrderPrintUtil(node_pointer tmp) {
@@ -406,17 +425,128 @@ namespace ft {
             inOrderPrintUtil(tmp->right);
         }
 
-        node_pointer findUtil(key_type key) {
-            return (searchTree(_root, key));
+        /* only tree functions */
+//        node_pointer searchTree(node_pointer node, key_type key) {
+//            if (node == _nil || key == node->value)
+//                return node;
+//            if (key < node->value)
+//                return (searchTree(node->left, key));
+//            return (searchTree(node->right, key));
+//        }
+
+//todo combine with function above
+        node_pointer findUtil(const key_type& k) const {
+            node_pointer it(this->_root);
+            while (it && it != this->_begin && it != this->_end) {
+                if (this->itemcompare(k, it->value))
+                    it = it->left;
+                else if (this->itemcompare(it->value, k))
+                    it = it->right;
+                else return it;
+            }
+            return _end;
         }
 
-        /* only tree functions */
-        node_pointer searchTree(node_pointer node, key_type key) {
-            if (node == _nil || key == node->value)
+
+        //todo change
+        node_pointer searchTreeIter(iterator position) {
+            node_pointer it(this->_root);
+            while (it && it != this->_begin && it != this->_end) {
+                if (this->itemcompare(*position, it->value))
+                    it = it->left;
+                else if (this->itemcompare(it->value, *position))
+                    it = it->right;
+                else return (it);
+            }
+            return this->_end;
+        }
+
+        //todo change
+        inline bool	itemcompare(const key_type& k, const ft::pair<Key, Value>& p) const {
+            return this->key_comp()(k, p.first);
+        }
+        inline bool	itemcompare(const ft::pair<Key, Value>& p, const key_type& k) const {
+            return this->key_comp()(p.first, k);
+        }
+        inline bool	itemcompare(const key_type& k1, const key_type& k2) const {
+            return this->key_comp()(k1, k2);
+        }
+        inline bool	itemcompare(const ft::pair<Key, Value>& p1, const ft::pair<Key, Value>& p2) const {
+            return this->key_comp()(p1.first, p2.first);
+        }
+
+
+//        template <class InputIterator>
+//        void insertIter(InputIterator first, InputIterator last,
+//                        typename ft::enable_if<!ft::is_integral<InputIterator>::value>::type* = 0)
+//        {
+//            while (first != last) {
+//                insert(*first);
+//                ++first;
+//            }
+            //todo try catch
+//            InputIterator it = first;
+//            try {
+//                for (; it != last; it++)
+//                    insertNode(*it);
+//            }
+//            catch (...) {
+//                InputIterator it1 = first;
+//                for (; it1 != it; it++)
+//                    this->erase(it1);
+//                throw;
+//            }
+//        }
+
+        node_pointer insertNode(const value_type val) {
+            /* create new node */
+            node_pointer node = _node_alloc.allocate(1);
+            try {
+//                node_pointer node = new TreeNode<T>;
+//                node->value = val; //
+                _alloc.construct(&node->value, val);
+                node->color = RED;
+                node->left = _nil;
+                node->right = _nil;
+                node->parent = _nil;
+            }
+            catch (...) {
+                _node_alloc.deallocate(node, 1);
+                throw;
+            }
+
+            _size++;
+            /* if tree is empty, new node is root and black */
+            if (_root == _nil) {
+                _root = node;
+                node->color = BLACK;
                 return node;
-            if (key < node->value)
-                return (searchTree(node->left, key));
-            return (searchTree(node->right, key));
+            }
+
+            /* find position for a new node */
+            node_pointer tmp = _root;
+            node_pointer tmpParent = NULL;
+            while (tmp != _nil) {
+                tmpParent = tmp;
+                if (node->value < tmp->value)
+                    tmp = tmp->left;
+                else
+                    tmp = tmp->right;
+            }
+
+            /* insert new node on the left or right */
+            node->parent = tmpParent;
+            if (tmpParent->value > node->value)
+                tmpParent->left = node;
+            else
+                tmpParent->right = node;
+
+            /* if parent of new node is black OR grandparent is _nil - return */
+            if (tmpParent->color == BLACK || node->parent->parent == _nil)
+                return node;
+
+            balanceInsert(node);
+            return node;
         }
 
         void balanceInsert(node_pointer added) {
@@ -499,15 +629,21 @@ namespace ft {
             tmp->right = node;
         }
 
-        void deleteNodeUtil(node_pointer root_tmp, const key_type val) {
-            /* find node to delete */
-            node_pointer z = searchTree(root_tmp, val);
+//        void deleteIter (iterator first, iterator last) {
+//            for (; first != last; first++)
+//                deleteNode(*first);
+//        }
+
+//        void deleteNode(const key_type val) {
+//            deleteNodeUtil(_root, val);
+//        }
+
+        void deleteNodeUtil(node_pointer z) {
             node_pointer x, y;
             if (z == _nil) {
                 std::cout << "Requested key doesn't exist in the tree\n";
                 return ;
             }
-//            if (x->color == RED && (x->left == _nil || x->right == _nil))
             _size--;
             y = z;
             int y_orig_color = y->color;
@@ -537,8 +673,8 @@ namespace ft {
                 y->color = z->color;
             }
 //            delete z;
-            _alloc.destroy(z);
-            _alloc.deallocate(z, 1);
+            _node_alloc.destroy(z);
+            _node_alloc.deallocate(z, 1);
             if (y_orig_color == BLACK)
                 balanceDelete(x);
         }
@@ -633,6 +769,33 @@ namespace ft {
             return tmp;
         }
 
+        /* iterators utils */
+        node_pointer beginNode() const { return minNode(_root); }
+//        const_iterator begin () const { return const_iterator(minNode(_root)); }
+        node_pointer endNode () const { return (_end); }
+//        const_iterator end () const { return const_iterator(_end); }
+
+        node_pointer rbeginNode() const { return (maxNode(_root)); }
+//        const_reverse_iterator rbegin() const { return const_reverse_iterator(maxNode(_root)); }
+        node_pointer rendNode() const { return (minNode(_root)); }
+//        const_reverse_iterator rend() const { return const_reverse_iterator(minNode(_root)); }
+
+
+        void clearUtil(node_pointer head) {
+//            deleteIter(static_cast<iterator>(beginNode()), static_cast<iterator>(endNode()));
+//            _size = 0;
+
+
+            if (head == _nil)
+                return ;
+            if (head->left)
+                clearUtil(head->left);
+            if (head->right)
+                clearUtil(head->right);
+//            _node_alloc.destroy(&head->value);
+            _node_alloc.deallocate(head, 1);
+        }
+
 //        /* find the predecessor of a given node */
 //        node_pointer predecessor (node_pointer x) {
 //            if (x->left)
@@ -658,7 +821,7 @@ namespace ft {
 //        }
 
 
-    };  //  class Tree
+    };  //  class tree
 
 
 }  //  namespace ft

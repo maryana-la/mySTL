@@ -568,15 +568,15 @@ test_empty(void)
     std::cout << "mp is empty : " << mp.empty() << std::endl;
 }
 
-void
-test_getallocator(void)
-{
-    TESTED_NS::map<char,int> mp;
-    TESTED_NS::pair<const char,int>* p;
-
-    p=mp.get_allocator().allocate(5);
-    mp.get_allocator().deallocate(p,5);
-}
+//void
+//test_getallocator(void)
+//{
+//    TESTED_NS::map<char,int> mp;
+//    TESTED_NS::pair<const char,int>* p;
+//
+//    p=mp.get_allocator().allocate(5);
+//    mp.get_allocator().deallocate(p,5);
+//}
 
 void
 test_keycomp(void)
