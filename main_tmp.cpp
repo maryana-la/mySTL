@@ -10,7 +10,6 @@
 int main ()
 {
     ft::map<int, int> l;
-
     ft::map<int, int> l1(l);
 
     return 0;

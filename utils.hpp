@@ -163,6 +163,13 @@ namespace ft {
         return (pair<T1, T2>(x, y));
     }
 
+    template <class T1, class T2>
+    std::ostream& operator<< (std::ostream &out, const pair<T1, T2> toPrint)
+    {
+        out << toPrint.first << " value" << toPrint.second;
+        return out;
+    }
+
 
 }  //  namespace ft
 

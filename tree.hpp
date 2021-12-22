@@ -100,7 +100,7 @@ namespace ft {
 
             node_ptr prev = x;
             node_ptr tmp = x->parent;
-            while (prev == tmp->right) {
+            while (tmp && prev == tmp->right) {
                 if (prev == tmp)
                     return tmp;
                 prev = tmp;
@@ -108,6 +108,26 @@ namespace ft {
             }
             return (tmp);
         }
+
+        /*
+        node* it(this);
+
+        if (it->right) {
+            it = it->right;
+            while (it->left)
+                it = it->left;
+        }
+        else {
+            node *tmp = it;
+            it = it->parent;
+            while (it->left != tmp) { //it->data <= this->data)
+                tmp = it;
+                it = it->parent;
+            }
+        }
+        return (it);
+        */
+
 
         node_ptr maxNode(node_ptr node) const {
             node_ptr tmp = node;
@@ -204,11 +224,11 @@ namespace ft {
 
         explicit tree(const key_compare cmp = key_compare(), const allocator_type& alloc = allocator_type()) :
             _alloc(alloc), _cmp(cmp) {
-
+//
             _nil = _node_alloc.allocate(1); // _nil = new TreeNode<value_type>;
             _nil->color = BLACK;
-            _nil->left = _nil;  //_nil
-            _nil->right = _nil;
+            _nil->left = _nil;
+            _nil->right = NULL;
             _nil->parent = _nil;
 
             _root = _nil;
@@ -221,7 +241,7 @@ namespace ft {
             _nil = _node_alloc.allocate(1);
             _nil->color = BLACK;
             _nil->left = _nil;
-            _nil->right = _nil;
+            _nil->right = NULL;
             _nil->parent = _nil;
 
             _root = _nil;
@@ -229,6 +249,8 @@ namespace ft {
             _begin = _nil;
             _size = 0;
             insertIter(other.begin(), other.end());
+            _begin = minNode(_root);
+
         }
 
         tree& operator=(const tree& other) {
@@ -237,13 +259,14 @@ namespace ft {
             _alloc = other._alloc;
             _cmp = other._cmp;
             clear();
-            insertIter(other.beginNode(), other.endNode());
+            insertIter(other.begin(), other.end());
+            _begin = minNode(_root);
             return *this;
         }
 
         ~tree() {
             clear();
-//            _node_alloc.destroy(_nil);
+            _node_alloc.destroy(_nil);
             _node_alloc.deallocate(_nil, 1);
             _size = 0;
         }
@@ -252,14 +275,14 @@ namespace ft {
          *  Iterators
          */
 
-        iterator begin() { return iterator(beginNode()); }
-        const_iterator begin() const { return const_iterator(beginNode()); }
-        iterator end() { return iterator(endNode()); }
-        const_iterator end() const { return const_iterator(endNode()); }
-        reverse_iterator rbegin() { return reverse_iterator(rbeginNode()); }
-        const_reverse_iterator rbegin() const { return const_reverse_iterator(rbeginNode()); }
-        reverse_iterator rend() { return reverse_iterator(rendNode()); }
-        const_reverse_iterator rend() const { return const_reverse_iterator(rendNode()); }
+        iterator begin() { return iterator(_begin); }
+        const_iterator begin() const { return const_iterator(_begin); }
+        iterator end() { return iterator(_end); }
+        const_iterator end() const { return const_iterator(_end); }
+        reverse_iterator rbegin() { return reverse_iterator(_end); }
+        const_reverse_iterator rbegin() const { return const_reverse_iterator(_end); }
+        reverse_iterator rend() { return reverse_iterator(_begin); }
+        const_reverse_iterator rend() const { return const_reverse_iterator(_begin); }
 
         /*
          *  Capacity
@@ -281,7 +304,7 @@ namespace ft {
                 return ;
             this->deleteNodeUtil(tmp);
 //            delete tmp;
-            --this->_size;
+//            --this->_size;
         }
 
         size_type   erase(const key_type& k) {
@@ -304,11 +327,16 @@ namespace ft {
             std::swap(_nil, other._nil);
             std::swap(_root, other._root);
             std::swap(_end, other._end);
+            std::swap(_begin, other._begin);
             std::swap(_size, _size);
         }
 
         void clear () {
             clearUtil(_root);
+            _size = 0;
+            _nil->right = NULL;
+            _begin = _nil;
+            _end = _nil;
         }
 
 
@@ -327,7 +355,7 @@ namespace ft {
 
         size_type count (const key_type& k) const {
             node_pointer tmp = findUtil(k);
-            if (tmp == _nil)
+            if (tmp == NULL)
                 return 0;
             return 1;
         }
@@ -406,7 +434,7 @@ namespace ft {
 
 
         void preOrderPrintUtil(node_pointer tmp) {
-            if (tmp == _nil)
+            if (tmp == NULL)
                 return;
             std::cout << tmp->value << " ";
             preOrderPrintUtil(tmp->left);
@@ -414,14 +442,13 @@ namespace ft {
         }
 
         void inOrderPrintUtil(node_pointer tmp) {
-            if (tmp == _nil)
+            if (tmp == NULL)
                 return;
             inOrderPrintUtil(tmp->left);
             if (tmp->color == RED)
                 std::cout << RED_COL << tmp->value << " " << RESET;
             else
                 std::cout << tmp->value << " ";
-//            std::cout << tmp->color << "c ";
             inOrderPrintUtil(tmp->right);
         }
 
@@ -502,38 +529,44 @@ namespace ft {
             /* create new node */
             node_pointer node = _node_alloc.allocate(1);
             try {
-//                node_pointer node = new TreeNode<T>;
-//                node->value = val; //
                 _alloc.construct(&node->value, val);
                 node->color = RED;
-                node->left = _nil;
-                node->right = _nil;
-                node->parent = _nil;
+                node->left = NULL;
+                node->right = NULL;
+                node->parent = NULL;
             }
             catch (...) {
                 _node_alloc.deallocate(node, 1);
                 throw;
             }
 
-            _size++;
+
             /* if tree is empty, new node is root and black */
-            if (_root == _nil) {
+            if (_nil->right == NULL) {
                 _root = node;
+                _nil->right = node;
+                node->parent = _nil;
                 node->color = BLACK;
+                _begin = node;
+                _size++;
                 return node;
             }
 
             /* find position for a new node */
             node_pointer tmp = _root;
             node_pointer tmpParent = NULL;
-            while (tmp != _nil) {
+            while (tmp != _nil && tmp != NULL) {
                 tmpParent = tmp;
+                if (node->value == tmp->value) //todo key compare
+                    return NULL;
+
                 if (node->value < tmp->value)
                     tmp = tmp->left;
                 else
                     tmp = tmp->right;
             }
 
+            _size++;
             /* insert new node on the left or right */
             node->parent = tmpParent;
             if (tmpParent->value > node->value)
@@ -542,10 +575,14 @@ namespace ft {
                 tmpParent->right = node;
 
             /* if parent of new node is black OR grandparent is _nil - return */
-            if (tmpParent->color == BLACK || node->parent->parent == _nil)
+            if (tmpParent->color == BLACK || node->parent->parent == _nil) {
+                _begin = minNode(_root);
                 return node;
+            }
 
             balanceInsert(node);
+//            _size++;
+            _begin = minNode(_root);
             return node;
         }
 
@@ -558,7 +595,7 @@ namespace ft {
                     uncle = added->parent->parent->left;
 
                 /* if uncle is red - recolor parent and uncle; if grandparent != root - recolor it */
-                if (uncle->color == RED) {
+                if (uncle && uncle->color == RED) {
                     uncle->color = BLACK;
                     added->parent->color = BLACK;
                     if (added->parent->parent != _root)
@@ -595,8 +632,10 @@ namespace ft {
         void rotateLeft(node_pointer node) {
             node_pointer tmp = node->right;
             tmp->parent = node->parent;
-            if (tmp->parent == _nil)
+            if (tmp->parent == _nil) {
                 _root = tmp;
+                _nil->right = _root;
+            }
             else if (node->parent->left == node)
                 node->parent->left = tmp;
             else
@@ -604,7 +643,7 @@ namespace ft {
             node->parent = tmp;
 
             node->right = tmp->left;
-            if (tmp->left != _nil)
+            if (tmp->left != NULL)
                 tmp->left->parent = node;
             tmp->left = node;
 
@@ -624,7 +663,7 @@ namespace ft {
             node->parent = tmp;
 
             node->left = tmp->right;
-            if (tmp->right != _nil)
+            if (tmp->right != NULL)
                 tmp->right->parent = node;
             tmp->right = node;
         }
@@ -640,7 +679,7 @@ namespace ft {
 
         void deleteNodeUtil(node_pointer z) {
             node_pointer x, y;
-            if (z == _nil) {
+            if (z == _nil || z == NULL) {
                 std::cout << "Requested key doesn't exist in the tree\n";
                 return ;
             }
@@ -648,16 +687,16 @@ namespace ft {
             y = z;
             int y_orig_color = y->color;
 
-            if (z->left == _nil) {
+            if (z->left == NULL) {
                 x = z->right;
                 transplant(z, z->right);
             }
-            else if (z->right == _nil) {
+            else if (z->right == NULL) {
                 x = z->left;
                 transplant(z, z->left);
             }
             else {
-                y = minNode(z->right);
+                y = minNode(z->right); //predecessor/successor
                 y_orig_color = y->color;
                 x = y->right;
                 if (y->parent == z)
@@ -677,6 +716,10 @@ namespace ft {
             _node_alloc.deallocate(z, 1);
             if (y_orig_color == BLACK)
                 balanceDelete(x);
+
+            _begin = minNode(_root);
+            if (_begin == NULL)
+                _begin = _nil;
         }
 
         void balanceDelete(node_pointer x) {
@@ -748,8 +791,10 @@ namespace ft {
         }
 
         void transplant(node_pointer u, node_pointer v) {
-            if (u->parent == _nil)
+            if (u->parent == _nil) {
                 _root = v;
+                _nil->right = _root;
+            }
             else if (u == u->parent->left)
                 u->parent->left = v;
             else
@@ -757,27 +802,33 @@ namespace ft {
             v->parent = u->parent;
         }
 
-        node_pointer maxNode(node_pointer tmp) const {
-            while(tmp->right != _nil)
+        node_pointer maxNode(node_pointer root) const {
+            node_pointer tmp = root;
+            if (!tmp)
+                return NULL;
+            while (tmp->right)
                 tmp = tmp->right;
             return tmp;
         }
 
-        node_pointer minNode (node_pointer tmp) const {
-            while (tmp->left != _nil)
+        node_pointer minNode (node_pointer root) const {
+            node_pointer tmp = root;
+            if (!tmp)
+                return NULL;
+            while (tmp->left)
                 tmp = tmp->left;
             return tmp;
         }
 
         /* iterators utils */
-        node_pointer beginNode() const { return minNode(_root); }
+//        node_pointer beginNode() const { return minNode(_root); }
 //        const_iterator begin () const { return const_iterator(minNode(_root)); }
-        node_pointer endNode () const { return (_end); }
+//        node_pointer endNode () const { return (_end); }
 //        const_iterator end () const { return const_iterator(_end); }
 
-        node_pointer rbeginNode() const { return (maxNode(_root)); }
+//        node_pointer rbeginNode() const { return (maxNode(_root)); }
 //        const_reverse_iterator rbegin() const { return const_reverse_iterator(maxNode(_root)); }
-        node_pointer rendNode() const { return (minNode(_root)); }
+//        node_pointer rendNode() const { return (minNode(_root)); }
 //        const_reverse_iterator rend() const { return const_reverse_iterator(minNode(_root)); }
 
 
