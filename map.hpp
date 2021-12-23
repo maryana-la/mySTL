@@ -81,17 +81,18 @@ namespace ft {
                 return (ft::make_pair(iterator(MyBase::insertNode(val)), true));
             node_pointer it = this->_root;
             while (it) {
-                if (key_compare()(val.first, it->value.first)) {
-                    if (it->left && it->left != this->_begin)
+                if (val.first < it->value.first) {
+                    if (it->left)
                         it = it->left;
                     else return ft::make_pair(iterator(MyBase::insertNode(val)), true);
                 }
-                else if (key_compare()(it->value.first, val.first)) {
-                    if (it->right && it->right != this->_end)
+                else if (val.first > it->value.first) {
+                    if (it->right)
                         it = it->right;
                     else return ft::make_pair(iterator(MyBase::insertNode(val)), true);
                 }
-                else break ;
+                else
+                    break ;
             }
             return ft::make_pair(iterator(it), false);
         }
@@ -114,7 +115,7 @@ namespace ft {
             catch(...) {
                 InputIterator it1 = first;
                 for (; it1 != it; it++)
-                    this->deleteNodeUtil(it1.getNode());
+                    this->erase(it1.getNode());
                 throw;
             }
         }
