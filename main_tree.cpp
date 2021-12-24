@@ -732,7 +732,7 @@ int main()
     test_relational();
     std::cout << "---------------- non member swap ------------------" << std::endl;
     test_nonmemberswap();
-    //test_performance();
+    test_performance();
     //while (1) {};
     return 0;
 }

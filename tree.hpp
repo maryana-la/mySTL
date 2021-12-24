@@ -167,6 +167,7 @@ namespace ft {
         typedef ft::ReverseIterator<iterator>       reverse_iterator;
         typedef ft::ReverseIterator<const_iterator> const_reverse_iterator;
 
+        /*
         // http://www.cplusplus.com/reference/map/map/value_comp/
         class value_compare { // in C++98, it is required to inherit binary_function<value_type,value_type,bool>
             friend class tree;
@@ -178,6 +179,7 @@ namespace ft {
                 return comp(x.first, y.first);
             }
         };  // class value_compare
+         */
 
     protected:
         typename Alloc::template rebind<node_type>::other _node_alloc;
@@ -240,7 +242,6 @@ namespace ft {
             clear();
             _node_alloc.destroy(_nil);
             _node_alloc.deallocate(_nil, 1);
-            _size = 0;
         }
 
         /*
@@ -273,8 +274,6 @@ namespace ft {
             if (tmp == this->_end)
                 return ;
             this->deleteNodeUtil(tmp);
-//            delete tmp;
-//            --this->_size;
         }
 
         size_type   erase(const key_type& k) {
@@ -387,7 +386,7 @@ namespace ft {
          */
 
         key_compare key_comp() const { return _cmp; }
-        value_compare value_comp() const { return value_compare(_cmp); }
+//        value_compare value_comp() const { return value_compare(_cmp); }
 
         void preOrderPrint() {
             preOrderPrintUtil(_root);

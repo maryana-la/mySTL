@@ -139,7 +139,7 @@ namespace ft {
 
          //todo check if needed
          const reference operator[](difference_type n) const { return *(_ptr + n); }
-        operator RandomAccessIterator<const value_type> () const { return RandomAccessIterator<const value_type>(_ptr) ; }
+         operator RandomAccessIterator<const value_type> () const { return RandomAccessIterator<const value_type>(_ptr) ; }
 
 
         /* friend for non-member overloads */
@@ -304,29 +304,6 @@ namespace ft {
     bool operator>= (const ReverseIterator<Iter1>& left, const ReverseIterator<Iter2>& right) {
         return (left.base() <= right.base());
     }
-
-
-
-
-    /*  from video, extra functions, not sure if needed
-    //  todo check if distance <0
-    template <typename Iterator, typename Distance>
-    void advance_template(Iterator& iter, Distance dist, input_iterator_tag) {
-        for (ptrdiff_t i = 0; i < dist; ++i)
-            ++iter;
-    }
-
-    template <typename Iterator, typename Distance>
-    void advance_template(Iterator& iter, Distance dist, random_access_iterator_tag) {
-        iter += dist;
-    }
-
-    template <class InputIterator, class Distance>
-    void advance(InputIterator& it, Distance dist) {
-        advance_template(it, dist, typename iterator_traits<InputIterator>::iterator_category());
-    }
-     */
-
 }  //  namespace ft
 
 #endif  //  ITERATOR_HPP_
