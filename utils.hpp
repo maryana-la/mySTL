@@ -22,8 +22,6 @@ namespace ft {
 
     template <> struct is_integral<bool> { static bool const value = true; };
     template <> struct is_integral<char> { static bool const value = true; };
-//    template <> struct is_integral<char16_t> { static bool const value = true; }; not a 98 std
-//    template <> struct is_integral<char32_t> { static bool const value = true; };
     template <> struct is_integral<signed char> { static bool const value = true; };
     template <> struct is_integral<wchar_t> { static bool const value = true; };
     template <> struct is_integral<short> { static bool const value = true; };
@@ -166,11 +164,9 @@ namespace ft {
     template <class T1, class T2>
     std::ostream& operator<< (std::ostream &out, const pair<T1, T2> toPrint)
     {
-        out << toPrint.first << " value" << toPrint.second;
+        out << toPrint.first << " value " << toPrint.second;
         return out;
     }
-
-
 }  //  namespace ft
 
 #endif  // UTILS_HPP_
