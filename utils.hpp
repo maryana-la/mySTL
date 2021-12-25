@@ -109,13 +109,10 @@ namespace ft {
         /* constructors */
         pair() : first(), second() {}
 
-        pair(const first_type& a, second_type& b) : first(a), second(b) {}
-
-        template<class U, class V>
-        pair(const std::pair<U, V>& pr) : first(pr.first), second(pr.second) { }
+        pair(const T1& a, const T2& b) : first(a), second(b) {}
 
         template<typename U, typename V>
-        pair(const pair<U,V>& pr) : first(pr.first), second(pr.second) {}
+        pair(const pair<U, V>& pr) : first(pr.first), second(pr.second) {}
 
         pair& operator=(const pair& other) {
             if (*this == other)
@@ -164,7 +161,8 @@ namespace ft {
     template <class T1, class T2>
     std::ostream& operator<< (std::ostream &out, const pair<T1, T2> toPrint)
     {
-        out << toPrint.first << " value " << toPrint.second;
+        out << toPrint.first << " ";
+//        << toPrint.second;
         return out;
     }
 }  //  namespace ft

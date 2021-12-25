@@ -262,7 +262,7 @@ namespace ft {
          */
 
         size_type size() const { return _size; }
-        size_type max_size() const { return _alloc.max_size(); /* _node_alloc.max_size();*/ } //todo or node_alloc
+        size_type max_size() const { return _node_alloc.max_size(); /* _alloc.max_size();*/ } //todo or node_alloc
         bool empty() const { return (_size == 0);}
 
         /*
@@ -296,7 +296,7 @@ namespace ft {
         void swap(tree& other) {
             std::swap(_alloc, other._alloc);
             std::swap(_cmp, other._cmp);
-            std::swap(_size, _size);
+            std::swap(_size, other._size);
             std::swap(_nil, other._nil);
             std::swap(_root, other._root);
             std::swap(_end, other._end);
@@ -637,7 +637,7 @@ namespace ft {
         void deleteNodeUtil(node_pointer z) {
             node_pointer x, y;
             if (z == _nil || z == NULL) {
-                std::cout << "Requested key doesn't exist in the tree\n";
+//                std::cout << "Requested key doesn't exist in the tree\n";
                 return ;
             }
             _size--;
@@ -690,6 +690,87 @@ namespace ft {
                 _begin = _nil;
         }
 
+
+        void balanceDelete(node_pointer x) {
+            if (x == NULL)
+                return;
+            while(x->value != _root->value && x->color == BLACK) {
+                node_pointer sibling = _root;
+                if(x->parent->left == x) {
+                    sibling = x->parent->right;
+                    if(sibling) {
+                        //CASE -- 1
+                        if(sibling->color == RED) {
+                            sibling->color = BLACK;
+                            x->parent->color = RED;
+                            rotateLeft(x->parent);
+                            sibling = x->parent->right;
+                        }
+                        //CASE -- 2
+                        if(sibling->left == NULL || sibling->right == NULL) { //todo check if balanced was && not ||
+                            sibling->color = RED;
+                            x = x->parent;
+                        }
+                        else if(sibling->left->color == BLACK || sibling->right->color == BLACK) {
+                            sibling->color = RED;
+                            x = x->parent;
+                        }
+                            //CASE -- 3
+                        else if(sibling->right->color == BLACK) {
+                            sibling->left->color = BLACK;
+                            sibling->color = RED;
+                            rotateRight(sibling);
+                            sibling = x->parent->right;
+                        } else {
+                            sibling->color = x->parent->color;
+                            x->parent->color = BLACK;
+                            if(sibling->right){ sibling->right->color = BLACK; }
+                            rotateLeft(x->parent);
+                            x = _root;
+                        }
+                    }
+                } else {
+                    if(x->parent->right == x){
+                        sibling = x->parent->left;
+                        if(sibling) {
+                            //CASE -- 1
+                            if(sibling->color == RED){
+                                sibling->color = BLACK;
+                                x->parent->color = RED;
+                                rotateRight(x->parent);
+                                sibling = x->parent->left;
+                            }
+                            //CASE -- 2
+                            if(sibling->left == NULL || sibling->right == NULL) { //todo check if balanced was && not ||
+                                sibling->color = RED;
+                                x = x->parent;
+                            }
+                            else if(sibling->left->color == BLACK || sibling->right->color == BLACK) {
+                                sibling->color = RED;
+                                x = x->parent;
+                            }
+                                //CASE -- 3
+                            else if(sibling->left->color == BLACK) {
+                                sibling->right->color = BLACK;
+                                sibling->color = RED;
+                                rotateRight(sibling);
+                                sibling = x->parent->left;
+                            } else {
+                                sibling->color = x->parent->color;
+                                x->parent->color = BLACK;
+                                if(sibling->left){ sibling->left->color = BLACK; }
+                                rotateLeft(x->parent);
+                                x = _root;
+                            }
+                        }
+                    }
+
+                }
+            }
+            x->color = BLACK;
+        }
+
+        /*
         void balanceDelete(node_pointer x) {
             if (x == NULL)
                 return;
@@ -705,20 +786,19 @@ namespace ft {
                         s = x->parent->right;
                     }
 
-                    if (s->left->color == BLACK && s->right->color == BLACK) {
+                    if (s->left && s->left->color == BLACK && s->right && s->right->color == BLACK) {
                         // case 3.2
                         s->color = RED;
                         x = x->parent;
                     }
                     else {
-                        if (s->right->color == BLACK) {
+                        if (s->right && s->right->color == BLACK) {
                             // case 3.3
                             s->left->color = BLACK;
                             s->color = RED;
                             rotateRight(s);
                             s = x->parent->right;
                         }
-//                        else
                         // case 3.4
                         s->color = x->parent->color;
                         x->parent->color = BLACK;
@@ -736,19 +816,18 @@ namespace ft {
                         s = x->parent->left;
                     }
 
-                    if (s->right->color == BLACK && s->right->color == BLACK) {
+                    if (s->left && s->left->color == BLACK && s->right && s->right->color == BLACK) {
                         // case 3.2
                         s->color = RED;
                         x = x->parent;
                     } else {
-                        if (s->left->color == BLACK) {
+                        if (s->left && s->left->color == BLACK) {
                             // case 3.3
                             s->right->color = BLACK;
                             s->color = RED;
                             rotateLeft(s);
                             s = x->parent->left;
                         }
-
                         // case 3.4
                         s->color = x->parent->color;
                         x->parent->color = BLACK;
@@ -760,6 +839,8 @@ namespace ft {
             }
             x->color = BLACK;
         }
+
+         */
 
         void transplant(node_pointer u, node_pointer v) {
             if (u && u->parent == _nil) {
