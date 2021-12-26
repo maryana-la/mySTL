@@ -43,7 +43,7 @@ namespace ft {
         TreeIterator(const node_ptr other) : _ptr(other) {}
 
         template<bool B>
-        TreeIterator(const TreeIterator<T, B> &other, typename ft::enable_if<!B>::type* = 0) : _ptr(other._ptr) {}
+        TreeIterator(const TreeIterator<T, B> &other, typename ft::enable_if<!B>::type* = 0) : _ptr(other.getNode()) {}
 
         TreeIterator& operator=(TreeIterator const &other) {
             this->_ptr = other._ptr;
@@ -386,15 +386,6 @@ namespace ft {
          */
 
         key_compare key_comp() const { return _cmp; }
-//        value_compare value_comp() const { return value_compare(_cmp); }
-
-        void preOrderPrint() {
-            preOrderPrintUtil(_root);
-        }
-
-        void inOrderPrint() {
-            inOrderPrintUtil(_root);
-        }
 
         /*
          *  Allocator
@@ -403,6 +394,14 @@ namespace ft {
         allocator_type  get_allocator() const { return _alloc; }
 
     protected:
+        void preOrderPrint() {
+            preOrderPrintUtil(_root);
+        }
+
+        void inOrderPrint() {
+            inOrderPrintUtil(_root);
+        }
+
         void preOrderPrintUtil(node_pointer tmp) {
             if (tmp == NULL)
                 return;

@@ -16,7 +16,6 @@ namespace ft {
         typedef typename MyBase::value_type value_type;
 
         typedef typename MyBase::key_compare key_compare;
-//        typedef typename MyBase::value_compare value_compare;
         typedef typename MyBase::allocator_type allocator_type;
 
         typedef typename MyBase::reference reference;
@@ -157,6 +156,11 @@ namespace ft {
     template<class Key, class Compare, class Alloc>
     bool operator>=(const set<Key, Compare, Alloc> &lhs, const set<Key, Compare, Alloc> &rhs) {
         return !(lhs < rhs);
+    }
+
+    template <class T, class Compare, class Alloc>
+    void swap (set<T,Compare,Alloc>& x, set<T,Compare,Alloc>& y) {
+        x.swap(y);
     }
 
 }  //  namespace ft

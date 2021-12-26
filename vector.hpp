@@ -222,8 +222,9 @@ namespace ft {
         }
 
         iterator insert(iterator position, const value_type& val) {
-            this->insert(position, 1, val);
-            return position;
+            int n = std::distance(begin(), position);
+            insert(position, 1, val);
+            return (iterator(&_array[n]));
         }
 
         void insert(iterator position, size_type n, const value_type& val) {
@@ -255,8 +256,9 @@ namespace ft {
                 }
             }
             else {
-                size_type InsertPos = std::distance(begin(), position);
-                size_type i = 0;
+                iterator tmp1 = begin();
+                int InsertPos = std::distance(begin(), position);
+                int i = 0;
                 try {
                     for (; i < InsertPos; i++)
                         _alloc.construct(&tmp[i], _array[i]);

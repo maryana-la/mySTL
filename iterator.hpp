@@ -1,8 +1,7 @@
 #ifndef ITERATOR_HPP_
 #define ITERATOR_HPP_
 
-#include <cstddef>  //  defines size_t, ptrdiff_t, NULL
-//#include <iterator>
+#include <cstddef>
 #include <iostream>
 #include "utils.hpp"
 
