@@ -1,16 +1,18 @@
-#include "set.hpp"
-#include <ctime>
+#include <iostream>
 #include <sys/time.h>
-#include <set>
-#include "color.hpp"
+#include "includes/color.hpp"
 #include <cmath>
 
-#ifndef NS
+#ifdef FT
 # define NS ft
+# include "includes/set.hpp"
+#else
+# define NS std
+#include <set>
 #endif
 
 template <typename Key>
-void print_tree(NS::set<Key> &tree) {
+static void print_tree(NS::set<Key> &tree) {
     typename NS::set<Key>::iterator it = tree.begin();
     typename NS::set<Key>::iterator ite = tree.end();
 
@@ -23,22 +25,7 @@ void print_tree(NS::set<Key> &tree) {
     std::cout << std::endl;
 }
 
-long int	get_time(void)
-{
-    long int		current;
-    struct timeval	now;
-
-    gettimeofday(&now, NULL);
-    current = (now.tv_sec * 1000000) + now.tv_usec;
-    return (current);
-}
-
-void speed_calculating(long int start) {
-    std::cout << RED_COL << "\n***** SPEED TEST ****" << RESET << std::endl;
-    printf("Time in microseconds %lu\n", get_time() - start);
-}
-
-void test_insert () {
+static void test_insert () {
     {
         std::cout << RED_COL << "***** INSERT TESTS ****" << RESET << std::endl;
         std::cout << "---- insert single element ----" << std::endl;
@@ -98,7 +85,7 @@ void test_insert () {
     }
 }
 
-void test_erase() {
+static void test_erase() {
     std::cout << RED_COL << "\n***** ERASE TESTS ****" << RESET << std::endl;
     NS::set<int> myt;
     NS::pair<NS::set<int>::iterator, bool> ret1;
@@ -137,7 +124,7 @@ void test_erase() {
     print_tree(myt);
 }
 
-void test_swap() {
+static void test_swap() {
     std::cout << RED_COL << "\n***** SWAP TESTS ****" << RESET << std::endl;
     NS::set<char> set1, set2;
 
@@ -164,7 +151,7 @@ void test_swap() {
     print_tree(set2);
 }
 
-void test_clear() {
+static void test_clear() {
     std::cout << RED_COL << "\n***** CLEAR TESTS ****" << RESET << std::endl;
 
     NS::set<char> myset;
@@ -182,7 +169,7 @@ void test_clear() {
     print_tree(myset);
 }
 
-void test_capacity() {
+static void test_capacity() {
     std::cout << RED_COL << "\n***** CAPACITY TESTS ****" << RESET << std::endl;
     NS::set<float> myset;
 
@@ -209,7 +196,7 @@ void test_capacity() {
     std::cout << "max_size: " << myset.max_size() << std::endl;
 }
 
-void test_iterators() {
+static void test_iterators() {
     std::cout << RED_COL << "\n***** ITERATOR TESTS ****" << RESET << std::endl;
     NS::set<char> myset;
     for (int i = 7; i <= 20; i++)
@@ -231,7 +218,7 @@ void test_iterators() {
     std::cout << std::endl;
 }
 
-void test_observers() {
+static void test_observers() {
     std::cout << RED_COL << "\n***** OBSERVERS TESTS ****" << RESET << std::endl;
     {
         NS::set<int> myset;
@@ -268,7 +255,7 @@ void test_observers() {
     }
 }
 
-void test_find() {
+static void test_find() {
     std::cout << RED_COL << "\n***** FIND TESTS ****" << RESET << std::endl;
     NS::set<char> myset;
     for (int i = 1; i <= 26; i++)
@@ -284,7 +271,7 @@ void test_find() {
     print_tree(myset);
 }
 
-void test_count() {
+static void test_count() {
     std::cout << RED_COL << "\n***** COUNT TESTS ****" << RESET << std::endl;
     NS::set<char> myset;
     for (int i = 'a'; i <= 'k'; i++)
@@ -304,7 +291,7 @@ void test_count() {
     }
 }
 
-void test_lower_bound() {
+static void test_lower_bound() {
     std::cout << RED_COL << "\n***** LOWER/UPPER_BOUND TESTS ****" << RESET << std::endl;
     NS::set<char> myset;
     for (int i = 'a'; i <= 'z'; i++)
@@ -324,7 +311,7 @@ void test_lower_bound() {
     print_tree(myset);
 }
 
-void test_equal_range() {
+static void test_equal_range() {
     std::cout << RED_COL << "\n***** EQUAL_RANGE TESTS ****" << RESET << std::endl;
 
     NS::set<int> myset;
@@ -340,7 +327,7 @@ void test_equal_range() {
     std::cout << "the upper bound points to: " << *ret.second << '\n';
 }
 
-void test_allocator() {
+static void test_allocator() {
     std::cout << RED_COL << "\n***** ALLOCATOR TESTS ****" << RESET << std::endl;
     NS::set<int> myset;
     int *p;
@@ -358,7 +345,7 @@ void test_allocator() {
     myset.get_allocator().deallocate(p,5);
 }
 
-void test_relational_operators() {
+static void test_relational_operators() {
     std::cout << RED_COL << "\n***** RELATIONAL_OPERATORS TESTS ****" << RESET << std::endl;
 
     NS::set<int> foo,bar;
@@ -395,7 +382,7 @@ void test_relational_operators() {
     if (foo>=bar) std::cout << "foo is greater than or equal to bar\n";
 }
 
-void test_swap_non_mem() {
+static void test_swap_non_mem() {
     std::cout << RED_COL << "\n***** SWAP_NON-MEMBER TESTS ****" << RESET << std::endl;
 
     NS::set<std::string> foo,bar;
@@ -420,7 +407,7 @@ void test_swap_non_mem() {
     print_tree(bar);
 }
 
-void test_big_tree() {
+static void test_big_tree() {
     std::cout << RED_COL << "\n***** BIG TREE TESTS ****" << RESET << std::endl;
     NS::set<int> myset;
     std::cout << "Create tree: for i from 0 till 1 000 000: <sqrt(i)>\n";
@@ -435,13 +422,10 @@ void test_big_tree() {
     std::cout << "Erase from begin till 3500\n";
     myset.erase(myset.begin(), last);
     std::cout << "myset contains:\n";
-//    print_tree(myset);
+    print_tree(myset);
 }
 
-int main () {
-//    clock_t t;
-//    t = clock();
-    long int start = get_time();
+void test_set () {
     test_insert();
     test_erase();
     test_swap();
@@ -457,10 +441,4 @@ int main () {
     test_relational_operators();
     test_swap_non_mem();
     test_big_tree();
-//    t = clock() - t;
-//    printf ("It took me %lu clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
-
-    speed_calculating(start);
-    return 0;
-
 }

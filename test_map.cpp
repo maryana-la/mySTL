@@ -1,12 +1,13 @@
-#include "map.hpp"
-//#include <ctime>
-#include <sys/time.h>
-#include <map>
-#include "color.hpp"
+#include <iostream>
 #include <cmath>
+#include "includes/color.hpp"
 
-#ifndef NS
+#ifdef FT
+# define NS ft
+# include "includes/map.hpp"
+#else
 # define NS std
+#include <map>
 #endif
 
 template <typename Key, typename T>
@@ -23,24 +24,9 @@ void print_tree(NS::map<Key, T> &tree) {
     std::cout << std::endl;
 }
 
-long int	get_time(void)
-{
-    long int		current;
-    struct timeval	now;
-
-    gettimeofday(&now, NULL);
-    current = (now.tv_sec * 1000000) + now.tv_usec;
-    return (current);
-}
-
-void speed_calculating(long int start) {
-    std::cout << RED_COL << "\n***** SPEED TEST ****" << RESET << std::endl;
-    printf("Time in microseconds %lu\n", get_time() - start);
-}
-
-void test_insert () {
+static void test_insert() {
     {
-        std::cout << RED_COL << "***** INSERT TESTS ****" << RESET << std::endl;
+        std::cout << MAGENTA << "***** INSERT TESTS ****" << RESET << std::endl;
         std::cout << "---- insert single element ----" << std::endl;
         NS::map<int, int> mytree;
         mytree.insert(NS::make_pair(10, 3));
@@ -98,8 +84,8 @@ void test_insert () {
     }
 }
 
-void test_erase() {
-    std::cout << RED_COL << "\n***** ERASE TESTS ****" << RESET << std::endl;
+static void test_erase() {
+    std::cout << MAGENTA << "\n***** ERASE TESTS ****" << RESET << std::endl;
     NS::map<int, int> myt;
     NS::pair<NS::map<int, int>::iterator, bool> ret1;
     for (int i = 0; i < 100 ; i++) {
@@ -135,8 +121,8 @@ void test_erase() {
     print_tree(myt);
 }
 
-void test_swap() {
-    std::cout << RED_COL << "\n***** SWAP TESTS ****" << RESET << std::endl;
+static void test_swap() {
+    std::cout << MAGENTA << "\n***** SWAP TESTS ****" << RESET << std::endl;
     NS::map<char,int> map1,map2;
 
     map1['x']=100;
@@ -163,8 +149,8 @@ void test_swap() {
     print_tree(map2);
 }
 
-void test_clear() {
-    std::cout << RED_COL << "\n***** CLEAR TESTS ****" << RESET << std::endl;
+static void test_clear() {
+    std::cout << MAGENTA << "\n***** CLEAR TESTS ****" << RESET << std::endl;
 
     NS::map<char,int> mymap;
 
@@ -182,8 +168,8 @@ void test_clear() {
     print_tree(mymap);
 }
 
-void test_capacity() {
-    std::cout << RED_COL << "\n***** CAPACITY TESTS ****" << RESET << std::endl;
+static void test_capacity() {
+    std::cout << MAGENTA << "\n***** CAPACITY TESTS ****" << RESET << std::endl;
     NS::map<int, char> mymap;
 
     mymap[0]='h';
@@ -213,8 +199,8 @@ void test_capacity() {
     std::cout << "max_size: " << mymap.max_size() << std::endl;
 }
 
-void test_elem_access() {
-    std::cout << RED_COL << "\n***** ELEMENT ACCESS TESTS ****" << RESET << std::endl;
+static void test_elem_access() {
+    std::cout << MAGENTA << "\n***** ELEMENT ACCESS TESTS ****" << RESET << std::endl;
     NS::map<int, char> mymap;
 
     mymap[0]='h';
@@ -238,8 +224,8 @@ void test_elem_access() {
     print_tree(mymap);
 }
 
-void test_iterators() {
-    std::cout << RED_COL << "\n***** ITERATOR TESTS ****" << RESET << std::endl;
+static void test_iterators() {
+    std::cout << MAGENTA << "\n***** ITERATOR TESTS ****" << RESET << std::endl;
     NS::map<int, char> mymap;
 
     mymap[2]='h';
@@ -252,9 +238,15 @@ void test_iterators() {
     std::cout << "my_map print via direct iterators: ";
     print_tree(mymap);
 
+    NS::map<int, char>::iterator it;
+    it = mymap.find(11);
+    std::cout << it->first << " " << it->second << std::endl;
+    mymap.erase(mymap.find(9), mymap.find(21));
+    std::cout << it->first << " " << it->second << std::endl;
+
+
     NS::map<int, char>::reverse_iterator rit = mymap.rbegin();
     NS::map<int, char>::reverse_iterator rite = mymap.rend();
-
     std::cout << "my_map print via reverse iterators: ";
     int flag = 1;
     for (; rit != rite; rit++, flag++){
@@ -264,8 +256,8 @@ void test_iterators() {
     }
 }
 
-void test_observers() {
-    std::cout << RED_COL << "\n***** OBSERVERS TESTS ****" << RESET << std::endl;
+static void test_observers() {
+    std::cout << MAGENTA << "\n***** OBSERVERS TESTS ****" << RESET << std::endl;
     {
         NS::map<int, char> mymap;
         mymap[2] = 'h';
@@ -305,8 +297,8 @@ void test_observers() {
     }
 }
 
-void test_find() {
-    std::cout << RED_COL << "\n***** FIND TESTS ****" << RESET << std::endl;
+static void test_find() {
+    std::cout << MAGENTA << "\n***** FIND TESTS ****" << RESET << std::endl;
     NS::map<int, char> mymap;
     for (int i = 1; i <= 26; i++)
         mymap.insert(NS::make_pair(i, (char) (i + 96)));
@@ -321,8 +313,8 @@ void test_find() {
     print_tree(mymap);
 }
 
-void test_count() {
-    std::cout << RED_COL << "\n***** COUNT TESTS ****" << RESET << std::endl;
+static void test_count() {
+    std::cout << MAGENTA << "\n***** COUNT TESTS ****" << RESET << std::endl;
     NS::map<char, int> mymap;
     for (int i = 1; i <= 10; i++)
         mymap.insert(NS::make_pair((char) (i + 96), i));
@@ -342,8 +334,8 @@ void test_count() {
 
 }
 
-void test_lower_bound() {
-    std::cout << RED_COL << "\n***** LOWER/UPPER_BOUND TESTS ****" << RESET << std::endl;
+static void test_lower_bound() {
+    std::cout << MAGENTA << "\n***** LOWER/UPPER_BOUND TESTS ****" << RESET << std::endl;
     NS::map<int, char> mymap;
     for (int i = 1; i <= 26; i++)
         mymap.insert(NS::make_pair(i, (char) (i + 96)));
@@ -363,8 +355,8 @@ void test_lower_bound() {
     print_tree(mymap);
 }
 
-void test_equal_range() {
-    std::cout << RED_COL << "\n***** EQUAL_RANGE TESTS ****" << RESET << std::endl;
+static void test_equal_range() {
+    std::cout << MAGENTA << "\n***** EQUAL_RANGE TESTS ****" << RESET << std::endl;
 
     NS::map<char, int> mymap;
     for (int i = 1; i <= 10; i++)
@@ -382,8 +374,8 @@ void test_equal_range() {
     std::cout << ret.second->first << " => " << ret.second->second << '\n';
 }
 
-void test_allocator() {
-    std::cout << RED_COL << "\n***** ALLOCATOR TESTS ****" << RESET << std::endl;
+static void test_allocator() {
+    std::cout << MAGENTA << "\n***** ALLOCATOR TESTS ****" << RESET << std::endl;
     int psize;
     NS::pair<const char,int>* p;
     NS::map<char, int> mymap;
@@ -398,8 +390,8 @@ void test_allocator() {
     mymap.get_allocator().deallocate(p,5);
 }
 
-void test_relational_operators() {
-    std::cout << RED_COL << "\n***** RELATIONAL_OPERATORS TESTS ****" << RESET << std::endl;
+static void test_relational_operators() {
+    std::cout << MAGENTA << "\n***** RELATIONAL_OPERATORS TESTS ****" << RESET << std::endl;
 
     NS::map<char,int> foo,bar;
     foo['a']=10;
@@ -436,8 +428,8 @@ void test_relational_operators() {
     if (foo>=bar) std::cout << "foo is greater than or equal to bar\n";
 }
 
-void test_swap_non_mem() {
-    std::cout << RED_COL << "\n***** SWAP_NON-MEMBER TESTS ****" << RESET << std::endl;
+static void test_swap_non_mem() {
+    std::cout << MAGENTA << "\n***** SWAP_NON-MEMBER TESTS ****" << RESET << std::endl;
 
     NS::map<char,int> foo,bar;
 
@@ -462,8 +454,8 @@ void test_swap_non_mem() {
     print_tree(bar);
 }
 
-void test_big_tree() {
-    std::cout << RED_COL << "\n***** BIG TREE TESTS ****" << RESET << std::endl;
+static void test_big_tree() {
+    std::cout << MAGENTA << "\n***** BIG TREE TESTS ****" << RESET << std::endl;
     NS::map<int, float> mymap;
     std::cout << "Create tree: for i from 0 till 10000: <i, sqrt(i)>\n";
     for (int i = 0; i < 1000000; i++)
@@ -478,13 +470,14 @@ void test_big_tree() {
     std::cout << "Erase from begin till 3500\n";
     mymap.erase(mymap.begin(), last);
     std::cout << "mymap contains:\n";
-//    print_tree(mymap);
+    print_tree(mymap);
 }
 
-int main () {
-//    clock_t t;
-//    t = clock();
-    long int start = get_time();
+void test_map() {
+    std::cout << std::endl;
+    std::cout << RED_COL << "-------------------------------------" << std::endl;
+    std::cout << RED_COL << "---------------- MAP ----------------" << std::endl;
+    std::cout << RED_COL << "-------------------------------------" << std::endl;
     test_insert();
     test_erase();
     test_swap();
@@ -501,10 +494,4 @@ int main () {
     test_relational_operators();
     test_swap_non_mem();
     test_big_tree();
-//    t = clock() - t;
-//    printf ("It took me %lu clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
-
-    speed_calculating(start);
-    return 0;
-
 }

@@ -1,7 +1,6 @@
 #ifndef SET_HPP
 #define SET_HPP
 
-
 #include "tree.hpp"
 
 namespace ft {

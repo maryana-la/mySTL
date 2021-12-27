@@ -1,7 +1,3 @@
-//
-// Created by maryana on 11.12.2021.
-//
-
 #ifndef COLOR_HPP
 #define COLOR_HPP
 

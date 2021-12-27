@@ -1,8 +1,8 @@
+#ifndef _VECTOR_HPP
+#define _VECTOR_HPP
 
-#ifndef VECTOR_HPP_
-#define VECTOR_HPP_
-
-#include "iterator.hpp"
+#include "vector_iterator.hpp"
+#include "reverse_iterator.hpp"
 #include "utils.hpp"
 #include <iterator>
 #include <memory>
@@ -44,7 +44,7 @@ namespace ft {
 
         /* (2) fill constructor: Constructs a container with n elements. Each element is a copy of val */
         explicit vector (size_type n, const value_type& value = value_type(), const allocator_type& alloc = allocator_type()) :
-                        _numOfElem(n), _capacity(n), _alloc(alloc) {
+                        _capacity(n), _numOfElem(n), _alloc(alloc) {
             _array = _alloc.allocate(_capacity);
             size_type i = 0;
             try {
@@ -83,8 +83,10 @@ namespace ft {
             if (!empty()) {
                 for (size_type i = 0; i < _numOfElem; i++)
                     _alloc.destroy(&_array[i]);
-                _alloc.deallocate(_array, _numOfElem);
+                _alloc.deallocate(_array, _capacity);
             }
+            else if (_capacity)
+                _alloc.deallocate(_array, _capacity);
         }
 
         vector& operator= (const vector& other) {
@@ -217,7 +219,7 @@ namespace ft {
         }
 
         void pop_back() {
-            _alloc.destroy(&_array[_numOfElem]);
+            _alloc.destroy(&_array[_numOfElem - 1]);
             _numOfElem -= 1;
         }
 
@@ -257,18 +259,18 @@ namespace ft {
             }
             else {
                 iterator tmp1 = begin();
-                int InsertPos = std::distance(begin(), position);
-                int i = 0;
+                long int InsertPos = std::distance(begin(), position);
+                long int i = 0;
                 try {
                     for (; i < InsertPos; i++)
                         _alloc.construct(&tmp[i], _array[i]);
-                    for (; i < InsertPos + n; i++)
+                    for (; i < (long)(InsertPos + n); i++)
                         _alloc.construct(&tmp[i], val);
-                    for (; i < _numOfElem + n; i++)
+                    for (; i < (long)(_numOfElem + n); i++)
                         _alloc.construct(&tmp[i], _array[i - n]);
                 }
                 catch (...) {
-                    for (size_type j = 0; j < i; j++)
+                    for (long int j = 0; j < i; j++)
                         _alloc.destroy(&tmp[j]);
                     _alloc.deallocate(tmp, new_size);
                     throw;
@@ -340,6 +342,8 @@ namespace ft {
                     throw;
                 }
             }
+            if (_capacity != 0)
+                _alloc.deallocate(_array, _capacity);
             _array = tmp;
             _numOfElem += n;
             _capacity = new_size;
@@ -430,9 +434,6 @@ namespace ft {
     void swap (vector<T,Alloc>& x, vector<T,Alloc>& y) {
         x.swap(y);
     }
-
-
 }  // namespace ft
-
 
 #endif  //  VECTOR_HPP_

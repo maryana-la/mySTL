@@ -83,7 +83,6 @@ public:
         return !(lhs < rhs);
     }
 
-
 }  //  namespace ft
 
 #endif  //  _STACK_HPP
