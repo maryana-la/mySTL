@@ -13,10 +13,9 @@ void test_vector();
 void test_stack();
 void test_set();
 
-long int	get_time(void)
-{
-    long int		current;
-    struct timeval	now;
+long int get_time(void) {
+    long int current;
+    struct timeval now;
 
     gettimeofday(&now, NULL);
     current = (now.tv_sec * 1000000) + now.tv_usec;
@@ -43,5 +42,4 @@ int main() {
     test_set();
     speed_calculating(start);
     return 0;
-
 }

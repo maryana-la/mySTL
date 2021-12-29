@@ -38,6 +38,7 @@ test:
 clean:
 	@echo "Object files deleted"
 	@rm -rf $(OBJ)
+	@rm -rf std_containers.d
 	@rm -rf $(O_FOLD)
 	@rm -rf ft_test
 	@rm -rf std_test
