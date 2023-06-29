@@ -17,7 +17,7 @@ As a bonus task containers SET and MAP are implemented using red-black tree data
 - Forbidden to  implement more public functions than the ones offered in the standard containers. Everything else must be private or protected. Each public function/- variable must be justified.
 - For non-member overloads, the keyword friend is allowed. Each use of friend must be justified and will be checked during evaluation.
 
-Launch the program
+### Launch the program
 - Clone the project and access the folder
 ```
 git clone https://github.com/maryana-la/mySTL && cd mySTL
