@@ -241,9 +241,6 @@ static void test_iterators() {
     NS::map<int, char>::iterator it;
     it = mymap.find(11);
     std::cout << it->first << " " << it->second << std::endl;
-    mymap.erase(mymap.find(9), mymap.find(21));
-    std::cout << it->first << " " << it->second << std::endl;
-
 
     NS::map<int, char>::reverse_iterator rit = mymap.rbegin();
     NS::map<int, char>::reverse_iterator rite = mymap.rend();
