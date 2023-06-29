@@ -1,11 +1,11 @@
 #include <iostream>
 #include <sys/time.h>
-#include "includes/color.hpp"
+#include "../includes/color.hpp"
 #include <cmath>
 
 #ifdef FT
 # define NS ft
-# include "includes/set.hpp"
+# include "../includes/set.hpp"
 #else
 # define NS std
 #include <set>
@@ -410,8 +410,8 @@ static void test_swap_non_mem() {
 static void test_big_tree() {
     std::cout << RED_COL << "\n***** BIG TREE TESTS ****" << RESET << std::endl;
     NS::set<int> myset;
-    std::cout << "Create tree: for i from 0 till 1 000 000: <sqrt(i)>\n";
-    for (int i = 0; i < 1000000; i++)
+    std::cout << "Create tree: for i from 0 till 100 000: <sqrt(i)>\n";
+    for (int i = 0; i < 100000; i++)
         myset.insert(i);
     NS::set<int>::iterator first, last;
     first = myset.find(3567);

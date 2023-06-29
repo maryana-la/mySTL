@@ -1,9 +1,9 @@
 #include <iostream>
-#include "includes/color.hpp"
+#include "../includes/color.hpp"
 
 #ifdef FT
 # define NS ft
-# include "includes/stack.hpp"
+# include "../includes/stack.hpp"
 #else
 # define NS std
 # include <stack>
@@ -91,7 +91,7 @@ static void test_big_stack() {
     std::cout << MAGENTA << "\n***** POP TEST ****" << RESET << std::endl;
     NS::stack<int> mystack;
 
-    std::cout << "Create stack<int> for 0...1 000 000\n";
+    std::cout << "Create stack<int> for 0...100000\n";
     for (int i = 0; i < 100000; i++)
         mystack.push(i);
     std::cout << "Popping out elements:\n";

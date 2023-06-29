@@ -1,6 +1,6 @@
 #include <iostream>
 #include <sys/time.h>
-#include "includes/color.hpp"
+#include "../includes/color.hpp"
 
 #ifdef FT
 # define NS ft

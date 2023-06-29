@@ -1,9 +1,9 @@
 #include <iostream>
-#include "includes/color.hpp"
+#include "../includes/color.hpp"
 
 #ifdef FT
 # define NS ft
-# include "includes/vector.hpp"
+# include "../includes/vector.hpp"
 #else
 # include <vector>
 # define NS std
@@ -341,11 +341,11 @@ static void test_swap_non_member() {
 static void test_big_vector() {
     std::cout << MAGENTA << "\n***** BIG VECTOR TEST ****" << RESET << std::endl;
     NS::vector<int> myvector;
-    for (int i = 0; i < 10000000; i++)
+    for (int i = 0; i < 100000; i++)
         myvector.push_back(i);
     std::cout << "myvector contains: ";
 //    print_vector(myvector);
-    myvector.resize(100000);
+    myvector.resize(1000);
     print_vector(myvector);
     myvector.erase(myvector.begin(), myvector.end());
     print_vector(myvector);

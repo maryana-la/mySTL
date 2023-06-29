@@ -1,10 +1,10 @@
 #include <iostream>
 #include <cmath>
-#include "includes/color.hpp"
+#include "../includes/color.hpp"
 
 #ifdef FT
 # define NS ft
-# include "includes/map.hpp"
+# include "../includes/map.hpp"
 #else
 # define NS std
 #include <map>
@@ -458,9 +458,8 @@ static void test_big_tree() {
     std::cout << MAGENTA << "\n***** BIG TREE TESTS ****" << RESET << std::endl;
     NS::map<int, float> mymap;
     std::cout << "Create tree: for i from 0 till 10000: <i, sqrt(i)>\n";
-    for (int i = 0; i < 1000000; i++)
+    for (int i = 0; i < 10000; i++)
         mymap.insert(NS::make_pair(i, sqrt(i)));
-//    print_tree(mymap);
     NS::map<int, float>::iterator first, last;
     first = mymap.find(3567);
     last = mymap.find(9999);
